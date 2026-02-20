@@ -1,0 +1,7 @@
+{
+  "name": "ProofLog",
+  "description": "A premium work-proof journaling app for tracking daily impact, managing projects, and generating AI-powered weekly reports.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
