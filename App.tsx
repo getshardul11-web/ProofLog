@@ -8,12 +8,18 @@ import Projects from './pages/Projects';
 import Reports from './pages/Reports';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
 import { db } from './services/storage';
+import { supabase } from './services/supabase';
 
 const App: React.FC = () => {
   const [showLogModal, setShowLogModal] = useState(false);
   const [logsUpdated, setLogsUpdated] = useState(0);
   const [projects, setProjects] = useState(db.getProjects());
+
+  // 🔐 Auth state
+  const [session, setSession] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const refreshProjects = () => {
     setProjects(db.getProjects());
@@ -29,13 +35,12 @@ const App: React.FC = () => {
     refreshProjects();
   }, [showLogModal]);
 
-  // Keyboard shortcut: "N" opens New Log modal
+  // ⌨️ Keyboard shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         const target = e.target as HTMLElement;
 
-        // prevent triggering while typing in inputs
         if (
           target?.tagName === 'INPUT' ||
           target?.tagName === 'TEXTAREA' ||
@@ -57,6 +62,53 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // 🔐 Supabase auth listener (HARDENED)
+  useEffect(() => {
+    let mounted = true;
+
+    const initAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        setSession(data.session ?? null);
+      } catch (err) {
+        console.error('Auth init error:', err);
+      } finally {
+        if (mounted) setAuthLoading(false);
+      }
+    };
+
+    initAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession ?? null);
+      setAuthLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // 🟡 Proper loading screen (IMPORTANT — no blank screen)
+  if (authLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-white">
+        <div className="text-slate-600 font-semibold">Loading…</div>
+      </div>
+    );
+  }
+
+  // 🔐 Not logged in
+  if (!session) {
+    return <Login />;
+  }
+
+  // ✅ Logged in app
   return (
     <Router>
       <Layout onOpenLogModal={() => setShowLogModal(true)}>
