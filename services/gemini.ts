@@ -2,14 +2,19 @@
 import { GoogleGenAI } from "@google/genai";
 import { WorkLog } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
+const getAiClient = () => {
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || '';
+  if (!apiKey) {
+    throw new Error("Gemini API Key is missing. Please set it in your environment variables.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 export const generateSmartReport = async (logs: WorkLog[]): Promise<string> => {
   if (logs.length < 3) {
     return "Not enough data for a meaningful report. Please log at least 3 distinct work activities to generate a professional summary.";
   }
 
-  const logsSummary = logs.map(l => 
+  const logsSummary = logs.map(l =>
     `- [${l.status}] ${l.title}: ${l.impact} (${l.category}, ${l.timeSpent} mins)`
   ).join('\n');
 
@@ -29,6 +34,7 @@ export const generateSmartReport = async (logs: WorkLog[]): Promise<string> => {
   `;
 
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
