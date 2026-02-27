@@ -20,19 +20,34 @@ const Reports: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [notionCopied, setNotionCopied] = useState(false);
 
-  const user = db.getUser();
-  const accentColor =
-    ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430';
+  const [user, setUser] = useState<any>(null);
+  const [accentColor, setAccentColor] = useState('#F4C430');
 
   useEffect(() => {
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    let mounted = true;
+    const loadData = async () => {
+      const u = await db.getUser();
+      if (!mounted) return;
+      if (u) {
+        setUser(u);
+        setAccentColor(ACCENT_COLORS[u.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430');
+      }
 
-    const recentLogs = db
-      .getLogs()
-      .filter((l) => l.createdAt > sevenDaysAgo)
-      .sort((a, b) => b.createdAt - a.createdAt);
+      const allLogs = await db.getLogs();
+      if (!mounted) return;
 
-    setLogs(recentLogs);
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const recentLogs = allLogs
+        .filter((l) => l.createdAt > sevenDaysAgo)
+        .sort((a, b) => b.createdAt - a.createdAt);
+
+      setLogs(recentLogs);
+    };
+
+    loadData();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const isHeading = (line: string) => {
@@ -134,8 +149,7 @@ const Reports: React.FC = () => {
       console.error('Report generation failed:', err);
 
       setReportText(
-        `Can't generate report right now.\n\nReason: ${
-          err?.message || 'Unknown error'
+        `Can't generate report right now.\n\nReason: ${err?.message || 'Unknown error'
         }\n\nTry again in a minute.`
       );
     } finally {
@@ -173,7 +187,7 @@ const Reports: React.FC = () => {
     setTimeout(() => setNotionCopied(false), 2500);
 
     const notionPage =
-      user.notionReportsUrl ||
+      user?.notionReportsUrl ||
       'https://www.notion.so/shardulgupta/Week-14-3009c6509142809595c0c1e3eb4db083?source=copy_link';
 
     window.open(notionPage, '_blank');

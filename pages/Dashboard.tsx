@@ -19,6 +19,50 @@ import {
   Cell,
 } from 'recharts';
 
+const StatCard = ({
+  label,
+  value,
+  subValue,
+  icon,
+  iconBg,
+  accentColor,
+}: {
+  label: string;
+  value: string | number;
+  subValue?: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  accentColor: string;
+}) => (
+  <div className="bg-white px-6 py-5 rounded-[22px] border border-black/15 shadow-sm h-[92px] flex items-center gap-5">
+    {/* BIG ICON BLOCK */}
+    <div
+      className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center shadow-sm"
+      style={{
+        background: iconBg,
+        border: `1.5px solid ${accentColor}`,
+      }}
+    >
+      {icon}
+    </div>
+
+    {/* CONTENT */}
+    <div className="flex flex-col justify-center leading-tight">
+      <p className="text-[12px] font-bold text-slate-900">{label}</p>
+
+      <div className="mt-1 flex items-baseline gap-2">
+        <h3 className="text-[22px] font-semibold tracking-tight text-slate-600">
+          {value}
+        </h3>
+
+        {subValue && (
+          <span className="text-xs text-slate-400 font-medium">{subValue}</span>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
 const Dashboard: React.FC = () => {
   const [logs, setLogs] = useState<WorkLog[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -27,33 +71,42 @@ const Dashboard: React.FC = () => {
   const accentColor = '#F4C430';
 
   useEffect(() => {
-  const loadData = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    let mounted = true;
+    const loadData = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) return;
+      if (!user || !mounted) return;
 
-    // fetch projects
-    const { data: projectsData } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      // fetch projects
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    // fetch logs
-    const { data: logsData } = await supabase
-      .from('logs')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      if (!mounted) return;
 
-    setProjects(projectsData || []);
-    setLogs(logsData || []);
-  };
+      // fetch logs
+      const { data: logsData } = await supabase
+        .from('logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-  loadData();
-}, []);
+      if (!mounted) return;
+
+      setProjects(projectsData || []);
+      setLogs(logsData || []);
+    };
+
+    loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // ---- Time helpers
   const isSameDay = (a: number, b: number) => {
@@ -176,50 +229,7 @@ const Dashboard: React.FC = () => {
   // ---- Pie Colors (same vibe as analytics)
   const pieColors = ['#f59e0b', '#0ea5e9', '#10b981', '#8b5cf6', '#ef4444'];
 
-  const StatCard = ({
-  label,
-  value,
-  subValue,
-  icon,
-  iconBg,
-}: {
-  label: string;
-  value: string | number;
-  subValue?: string;
-  icon: React.ReactNode;
-  iconBg: string;
-}) => (
-  <div className="bg-white px-6 py-5 rounded-[22px] border border-black/15 shadow-sm h-[92px] flex items-center gap-5">
-    
-    {/* BIG ICON BLOCK */}
-    <div
-  className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center shadow-sm"
-  style={{
-    background: iconBg,
-    border: `1.5px solid ${accentColor}`,
 
-  }}
->
-  {icon}
-</div>
-
-
-    {/* CONTENT */}
-    <div className="flex flex-col justify-center leading-tight">
-      <p className="text-[12px] font-bold text-slate-900">{label}</p>
-
-      <div className="mt-1 flex items-baseline gap-2">
-        <h3 className="text-[22px] font-semibold tracking-tight text-slate-600">
-          {value}
-        </h3>
-
-        {subValue && (
-          <span className="text-xs text-slate-400 font-medium">{subValue}</span>
-        )}
-      </div>
-    </div>
-  </div>
-);
 
 
   return (
@@ -250,6 +260,7 @@ const Dashboard: React.FC = () => {
     subValue={`${todayLogs.length} logs`}
     icon={<Timer size={22} className="text-black" />}
     iconBg="white"
+    accentColor={accentColor}
   />
 
   <StatCard
@@ -258,6 +269,7 @@ const Dashboard: React.FC = () => {
     subValue={`${weekLogs.length} logs`}
     icon={<CalendarDays size={22} className="text-black" />}
     iconBg="white"
+    accentColor={accentColor}
   />
 
   <StatCard
@@ -266,6 +278,7 @@ const Dashboard: React.FC = () => {
     subValue="all time"
     icon={<CheckCircle2 size={22} className="text-black" />}
     iconBg="white"
+    accentColor={accentColor}
   />
 
   <StatCard
@@ -274,6 +287,7 @@ const Dashboard: React.FC = () => {
     subValue="active"
     icon={<FolderKanban size={22} className="text-black" />}
     iconBg="white"
+    accentColor={accentColor}
   />
 
   <StatCard
@@ -282,6 +296,7 @@ const Dashboard: React.FC = () => {
     subValue="current"
     icon={<Flame size={22} className="text-black" />}
     iconBg="white"
+    accentColor={accentColor}
   />
 </section>
 

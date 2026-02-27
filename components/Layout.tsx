@@ -28,15 +28,22 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    let mounted = true;
     const loadUser = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      setUser(user);
+      if (mounted) {
+        setUser(user);
+      }
     };
 
     loadUser();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // ✅ SAFE accent color (prevents crash)
@@ -93,7 +100,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
     <div className="min-h-screen w-full bg-white relative overflow-hidden">
       <div className="relative z-10 w-full min-h-screen flex items-stretch p-0">
         <div className="w-full flex overflow-hidden bg-white border border-black/20 shadow-[0_20px_60px_rgba(0,0,0,0.10)]">
-          
+
           {/* SIDEBAR */}
           <aside className="w-[90px] flex flex-col items-center py-8 border-r border-black/20 bg-white">
             <div className="w-12 h-12 rounded-2xl bg-white border border-black/20 shadow-sm flex items-center justify-center">
@@ -118,11 +125,10 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
                   <Link
                     key={item.id}
                     to={item.path}
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-                      isActive
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${isActive
                         ? "bg-slate-900 text-white shadow-md"
                         : "bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-black/20"
-                    }`}
+                      }`}
                   >
                     <Icon size={25} />
                   </Link>
@@ -137,8 +143,8 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
           <div className="flex-1 flex flex-col">
             {/* TOP BAR */}
             <div style={{ color: 'red', fontWeight: 700 }}>
-  DEBUG BUILD v2
-</div>
+              DEBUG BUILD v2
+            </div>
             <div className="flex items-center justify-between px-10 py-6 border-b border-black/20 bg-white">
               <h1 className="text-[20px] font-bold tracking-tight text-slate-900">
                 {NAV_ITEMS.find((n) => n.path === location.pathname)?.label ||

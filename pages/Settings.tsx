@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../services/storage';
 import { ACCENT_COLORS, UserProfile } from '../types';
 import { Palette, Bell, CheckCircle2, Trash2 } from 'lucide-react';
 
 const Settings: React.FC = () => {
-  const [user, setUser] = useState<UserProfile>(db.getUser());
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchUser = async () => {
+      const u = await db.getUser();
+      if (!mounted) return;
+      if (u) {
+        setUser(u);
+      }
+    };
+    fetchUser();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!user) {
+    return <div className="p-10 text-slate-500">Loading settings...</div>;
+  }
 
   const accentColor =
     ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430';
@@ -38,7 +57,7 @@ const Settings: React.FC = () => {
 
   return (
     <div className="space-y-10 max-w-3xl">
-      
+
       {/* Background Pollen Particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[40px] right-[80px] w-[420px] h-[420px] rounded-full blur-3xl opacity-[0.14] bg-yellow-200" />
@@ -76,7 +95,7 @@ const Settings: React.FC = () => {
           <path d="M1040 260 L900 760" stroke="#facc15" strokeWidth="2" />
         </svg>
       </div>
-      
+
       {/* Header */}
       <header>
         <h1 className="text-[34px] leading-tight font-semibold tracking-tight text-slate-900">
@@ -128,16 +147,16 @@ const Settings: React.FC = () => {
             </div>
 
             <div>
-  <label className="block text-sm font-semibold text-slate-700 mb-2">
-    Email
-  </label>
-  <input
-  type="email"
-  className="w-full px-4 py-3 rounded-2xl border border-slate-200/70 bg-white/70 backdrop-blur-xl outline-none text-sm font-medium text-slate-800"
-  value={user.email}
-  onChange={(e) => handleUpdate({ email: e.target.value })}
-/>
-</div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200/70 bg-white/70 backdrop-blur-xl outline-none text-sm font-medium text-slate-800"
+                value={user.email}
+                onChange={(e) => handleUpdate({ email: e.target.value })}
+              />
+            </div>
 
           </div>
         </div>
@@ -178,9 +197,9 @@ const Settings: React.FC = () => {
           </div>
         </div>
 
-        
-        </div>
+
       </div>
+    </div>
   );
 };
 

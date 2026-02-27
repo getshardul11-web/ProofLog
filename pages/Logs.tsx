@@ -25,16 +25,26 @@ const Logs: React.FC = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editImpact, setEditImpact] = useState('');
 
-  const user = db.getUser();
-  const accentColor =
-    ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430';
+  const [accentColor, setAccentColor] = useState('#F4C430');
 
   useEffect(() => {
-    loadLogs();
+    let mounted = true;
+    const fetchUserAndLogs = async () => {
+      const user = await db.getUser();
+      if (!mounted) return;
+      if (user) {
+        setAccentColor(ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430');
+      }
+      await loadLogs();
+    };
+    fetchUserAndLogs();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const loadLogs = () => {
-    const allLogs = db.getLogs();
+  const loadLogs = async () => {
+    const allLogs = await db.getLogs();
 
     const sorted = [...allLogs].sort((a, b) => {
       const aOrder = (a as any).order ?? null;
@@ -50,9 +60,9 @@ const Logs: React.FC = () => {
     setLogs(sorted);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Delete this log? This cannot be undone.')) {
-      db.deleteLog(id);
+      await db.deleteLog(id);
       loadLogs();
     }
   };
@@ -69,7 +79,7 @@ const Logs: React.FC = () => {
     setEditImpact('');
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingLog) return;
 
     const updatedTitle = editTitle.trim();
@@ -86,7 +96,7 @@ const Logs: React.FC = () => {
     }
 
     if ((db as any).updateLog) {
-      (db as any).updateLog(editingLog.id, {
+      await (db as any).updateLog(editingLog.id, {
         title: updatedTitle,
         impact: updatedImpact,
       });
@@ -98,9 +108,9 @@ const Logs: React.FC = () => {
       );
 
       if ((db as any).saveLogs) {
-        (db as any).saveLogs(updatedLogs);
+        await (db as any).saveLogs(updatedLogs);
       } else if ((db as any).setLogs) {
-        (db as any).setLogs(updatedLogs);
+        await (db as any).setLogs(updatedLogs);
       } else {
         alert(
           'Your db service is missing updateLog/saveLogs. Paste storage.ts and I will fix it.'
@@ -261,10 +271,9 @@ const Logs: React.FC = () => {
               {/* Top Row */}
               <div className="flex items-start justify-between gap-6 mb-5">
                 <span
-                  className={`px-4 py-2 rounded-full text-[13px] font-semibold tracking-tight ${
-                    CATEGORY_COLORS[log.category] ||
+                  className={`px-4 py-2 rounded-full text-[13px] font-semibold tracking-tight ${CATEGORY_COLORS[log.category] ||
                     'bg-slate-50 text-slate-700 border border-black/30'
-                  }`}
+                    }`}
                 >
                   {log.category}
                 </span>

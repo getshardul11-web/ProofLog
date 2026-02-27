@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../services/storage';
-import { ACCENT_COLORS, Category } from '../types';
+import { ACCENT_COLORS, Category, WorkLog } from '../types';
 import { Clock, BarChart3, PieChart as PieIcon, TrendingUp } from 'lucide-react';
 import {
   BarChart,
@@ -17,11 +17,49 @@ import {
   Area,
 } from 'recharts';
 
+const StatCard = ({ icon: Icon, label, value, sub, accentColor }: any) => (
+  <div className="bg-white/60 backdrop-blur-2xl p-6 rounded-3xl border border-slate-200/70 shadow-sm hover:shadow-md transition-all">
+    <div className="flex items-center gap-4">
+      <div className="w-12 h-12 rounded-2xl bg-white/70 border border-slate-200/70 shadow-sm flex items-center justify-center">
+        <Icon size={20} style={{ color: accentColor }} />
+      </div>
+      <div>
+        <p className="text-[12px] font-semibold text-slate-500 tracking-tight">
+          {label}
+        </p>
+        <p className="text-[20px] font-semibold tracking-tight text-slate-900 mt-1">
+          {value}
+        </p>
+        {sub && (
+          <p className="text-xs text-slate-400 font-medium mt-1">{sub}</p>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
 const Analytics: React.FC = () => {
-  const logs = db.getLogs();
-  const user = db.getUser();
-  const accentColor =
-    ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430';
+  const [logs, setLogs] = useState<WorkLog[]>([]);
+  const [accentColor, setAccentColor] = useState('#F4C430');
+
+  useEffect(() => {
+    let mounted = true;
+    const loadData = async () => {
+      const user = await db.getUser();
+      if (!mounted) return;
+      if (user) {
+        setAccentColor(ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430');
+      }
+
+      const logsData = await db.getLogs();
+      if (!mounted) return;
+      setLogs(logsData || []);
+    };
+    loadData();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const totalTime = logs.reduce((acc, l) => acc + l.timeSpent, 0);
   const totalHours = Math.floor(totalTime / 60);
@@ -79,33 +117,12 @@ const Analytics: React.FC = () => {
   const weekHours = Math.floor(totalWeekTime / 60);
   const weekMins = totalWeekTime % 60;
 
-  const StatCard = ({ icon: Icon, label, value, sub }: any) => (
-    <div className="bg-white/60 backdrop-blur-2xl p-6 rounded-3xl border border-slate-200/70 shadow-sm hover:shadow-md transition-all">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-white/70 border border-slate-200/70 shadow-sm flex items-center justify-center">
-          <Icon size={20} style={{ color: accentColor }} />
-        </div>
-        <div>
-          <p className="text-[12px] font-semibold text-slate-500 tracking-tight">
-            {label}
-          </p>
-          <p className="text-[20px] font-semibold tracking-tight text-slate-900 mt-1">
-            {value}
-          </p>
-          {sub && (
-            <p className="text-xs text-slate-400 font-medium mt-1">{sub}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-10">
-      
-    
-      
-      
+
+
+
+
 
       {/* Quick Stats */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -114,24 +131,28 @@ const Analytics: React.FC = () => {
           label="Total logs"
           value={logs.length}
           sub="all time"
+          accentColor={accentColor}
         />
         <StatCard
           icon={Clock}
           label="Total time"
           value={`${totalHours}h ${totalMins}m`}
           sub="logged"
+          accentColor={accentColor}
         />
         <StatCard
           icon={TrendingUp}
           label="This week"
           value={`${weekHours}h ${weekMins}m`}
           sub={`${totalWeekLogs} logs`}
+          accentColor={accentColor}
         />
         <StatCard
           icon={PieIcon}
           label="Top category"
           value={topCategory}
           sub="most time spent"
+          accentColor={accentColor}
         />
       </section>
 
