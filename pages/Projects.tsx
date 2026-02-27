@@ -233,10 +233,10 @@ const Projects: React.FC = () => {
       prev.map((p) =>
         p.id === editingProject.id
           ? {
-              ...p,
-              name: editName.trim(),
-              description: injectBoardMarker(editDesc, editBoard),
-            }
+            ...p,
+            name: editName.trim(),
+            description: injectBoardMarker(editDesc, editBoard),
+          }
           : p
       )
     );
@@ -362,6 +362,184 @@ const Projects: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* ADD MODAL */}
+      {isAdding && (
+        <div className="fixed inset-0 z-[999] bg-black/30 backdrop-blur-sm flex items-center justify-center px-6">
+          <div className="w-full max-w-[720px] bg-white rounded-[34px] border border-black/15 shadow-xl overflow-hidden">
+            <div className="p-6 border-b border-black/10 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Create new project
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Give your project a name, board, and optional description.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsAdding(false)}
+                className="w-10 h-10 rounded-xl border border-black/10 bg-white flex items-center justify-center"
+              >
+                <X size={18} className="text-slate-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddProject} className="p-6 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Project name
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="Eg. Website Revamp"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Board
+                  </label>
+                  <select
+                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-semibold text-slate-700 cursor-pointer"
+                    value={newBoard}
+                    onChange={(e) => setNewBoard(e.target.value)}
+                  >
+                    {boards.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Description (optional)
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  placeholder="What is this project about?"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAdding(false)}
+                  className="px-5 py-3 rounded-2xl font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="px-6 py-3 rounded-2xl font-semibold text-slate-900 border border-black/10 bg-white shadow-sm hover:shadow-md transition-all"
+                >
+                  Create project
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT MODAL */}
+      {isEditingProject && editingProject && (
+        <div className="fixed inset-0 z-[999] bg-black/30 backdrop-blur-sm flex items-center justify-center px-6">
+          <div className="w-full max-w-[720px] bg-white rounded-[34px] border border-black/15 shadow-xl overflow-hidden">
+            <div className="p-6 border-b border-black/10 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Edit project
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Update the project details or move it to another board.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsEditingProject(false)}
+                className="w-10 h-10 rounded-xl border border-black/10 bg-white flex items-center justify-center"
+              >
+                <X size={18} className="text-slate-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-6 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Project name
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Board
+                  </label>
+                  <select
+                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-semibold text-slate-700 cursor-pointer"
+                    value={editBoard}
+                    onChange={(e) => setEditBoard(e.target.value)}
+                  >
+                    {boards.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Description
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProject(false)}
+                  className="px-5 py-3 rounded-2xl font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="px-6 py-3 rounded-2xl font-semibold text-slate-900 border border-black/10 bg-white shadow-sm hover:shadow-md transition-all"
+                >
+                  Save changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
