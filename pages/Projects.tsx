@@ -16,7 +16,7 @@ import {
 type BoardType = 'YelloSKYE' | 'Enterprise' | 'Building Cool Stuff';
 
 const BOARDS: BoardType[] = ['YelloSKYE', 'Enterprise', 'Building Cool Stuff'];
-const [logs, setLogs] = useState<any[]>([]);
+
 /** Random pleasing palette */
 const PROJECT_COLORS = [
   '#f59e0b', // amber
@@ -51,6 +51,7 @@ const injectBoardMarker = (desc: string, board: BoardType) => {
 
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
   const [isAdding, setIsAdding] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
