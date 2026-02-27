@@ -246,9 +246,6 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="flex-1 flex justify-end">
-          <p className="text-[20px] text-slate-900 font-semibold max-w-[460px] text-right leading-relaxed mt-4">
-            A high agency system for high agency builders.
-          </p>
         </div>
       </div>
 

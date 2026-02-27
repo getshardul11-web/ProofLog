@@ -1,6 +1,6 @@
 import { supabase } from '../services/supabase';
 import React, { useState, useEffect, useMemo } from 'react';
-import { Project, ACCENT_COLORS } from '../types';
+import { Project } from '../types';
 import {
   Plus,
   Folder,
@@ -13,65 +13,80 @@ import {
   Trash2,
 } from 'lucide-react';
 
-type BoardType = 'YelloSKYE' | 'Enterprise' | 'Building Cool Stuff';
+/* =========================
+   Helpers
+========================= */
 
-const BOARDS: BoardType[] = ['YelloSKYE', 'Enterprise', 'Building Cool Stuff'];
-
-/** Random pleasing palette */
-const PROJECT_COLORS = [
-  '#f59e0b', // amber
-  '#0ea5e9', // sky
-  '#10b981', // emerald
-  '#8b5cf6', // violet
-  '#ef4444', // red
-  '#ec4899', // pink
-  '#14b8a6', // teal
-  '#6366f1', // indigo
+const DEFAULT_BOARDS = [
+  'YelloSKYE',
+  'Enterprise',
+  'Building Cool Stuff',
 ];
 
-const randomColor = () => {
-  return PROJECT_COLORS[Math.floor(Math.random() * PROJECT_COLORS.length)];
-};
+const PROJECT_COLORS = [
+  '#f59e0b',
+  '#0ea5e9',
+  '#10b981',
+  '#8b5cf6',
+  '#ef4444',
+  '#ec4899',
+  '#14b8a6',
+  '#6366f1',
+];
 
-/** Clean description from board markers */
-const cleanDescription = (desc: string) => {
-  return (desc || '').replace(/\[board:.*?\]/g, '').trim();
-};
+const randomColor = () =>
+  PROJECT_COLORS[Math.floor(Math.random() * PROJECT_COLORS.length)];
 
-/** Inject board marker */
-const injectBoardMarker = (desc: string, board: BoardType) => {
+const slugifyBoard = (name: string) =>
+  name.toLowerCase().replace(/\s+/g, '-');
+
+const cleanDescription = (desc: string) =>
+  (desc || '').replace(/\[board:.*?\]/g, '').trim();
+
+const injectBoardMarker = (desc: string, boardName: string) => {
   const cleaned = cleanDescription(desc);
-
-  if (board === 'YelloSKYE') return `${cleaned} [board:yelloskye]`.trim();
-  if (board === 'Enterprise') return `${cleaned} [board:enterprise]`.trim();
-  if (board === 'Building Cool Stuff') return `${cleaned} [board:coolshit]`.trim();
-
-  return cleaned;
+  const slug = slugifyBoard(boardName);
+  return `${cleaned} [board:${slug}]`.trim();
 };
+
+const extractBoardSlug = (project: Project) => {
+  const desc = project.description || '';
+  const match = desc.match(/\[board:(.*?)\]/);
+  return match?.[1] || null;
+};
+
+/* =========================
+   Component
+========================= */
 
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
-  const [isAdding, setIsAdding] = useState(false);
+  const [boards, setBoards] = useState<string[]>(DEFAULT_BOARDS);
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newBoardName, setNewBoardName] = useState('');
+
+  const [isEditingProject, setIsEditingProject] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
-  const [newBoard, setNewBoard] = useState<BoardType>('YelloSKYE');
+  const [newBoard, setNewBoard] = useState(DEFAULT_BOARDS[0]);
 
   const [editName, setEditName] = useState('');
   const [editDesc, setEditDesc] = useState('');
-  const [editBoard, setEditBoard] = useState<BoardType>('Enterprise');
-
+  const [editBoard, setEditBoard] = useState(DEFAULT_BOARDS[0]);
 
   const accentColor = '#F4C430';
 
-
+  /* =========================
+     Load data
+  ========================= */
 
   useEffect(() => {
     let mounted = true;
+
     const loadData = async () => {
       const {
         data: { user },
@@ -85,8 +100,6 @@ const Projects: React.FC = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (!mounted) return;
-
       const { data: logsData } = await supabase
         .from('logs')
         .select('*')
@@ -94,8 +107,8 @@ const Projects: React.FC = () => {
 
       if (!mounted) return;
 
-      setProjects(projectsData || []);
-      setLogs(logsData || []);
+      setProjects(Array.isArray(projectsData) ? projectsData : []);
+      setLogs(Array.isArray(logsData) ? logsData : []);
     };
 
     loadData();
@@ -105,47 +118,67 @@ const Projects: React.FC = () => {
     };
   }, []);
 
-  /** Safe board extraction */
-  const getBoardForProject = (project: Project): BoardType => {
-    const desc = (project.description || '').toLowerCase();
-    const name = project.name.toLowerCase();
+  /* =========================
+     Group projects
+  ========================= */
 
-    if (desc.includes('[board:yelloskye]') || name.includes('yelloskye'))
-      return 'YelloSKYE';
-
-    if (desc.includes('[board:enterprise]') || name.includes('enterprise'))
-      return 'Enterprise';
-
-    if (
-      desc.includes('[board:coolshit]') ||
-      name.includes('Building Cool Stuff') ||
-      name.includes('cool')
-    )
-      return 'Building Cool Stuff';
-
-    return 'Enterprise';
-  };
-
-  /** Group projects by board */
   const projectsByBoard = useMemo(() => {
-    const grouped: Record<BoardType, Project[]> = {
-      YelloSKYE: [],
-      Enterprise: [],
-      'Building Cool Stuff': [],
-    };
+    const grouped: Record<string, Project[]> = {};
+
+    boards.forEach((b) => (grouped[b] = []));
 
     projects.forEach((p) => {
-      grouped[getBoardForProject(p)].push(p);
+      const slug = extractBoardSlug(p);
+      const board =
+        boards.find((b) => slugifyBoard(b) === slug) || boards[0];
+
+      grouped[board].push(p);
     });
 
     return grouped;
-  }, [projects]);
+  }, [projects, boards]);
 
-  /** Add Project */
+  /* =========================
+     Board actions
+  ========================= */
+
+  const addBoard = () => {
+    if (!newBoardName.trim()) return;
+    setBoards((prev) => [...prev, newBoardName.trim()]);
+    setNewBoardName('');
+  };
+
+  const deleteBoard = (name: string) => {
+    if (boards.length <= 1) return;
+    setBoards((prev) => prev.filter((b) => b !== name));
+  };
+
+  const moveBoard = (name: string, dir: 'left' | 'right') => {
+    const index = boards.indexOf(name);
+    if (index === -1) return;
+
+    const swap = dir === 'left' ? index - 1 : index + 1;
+    if (swap < 0 || swap >= boards.length) return;
+
+    const copy = [...boards];
+    [copy[index], copy[swap]] = [copy[swap], copy[index]];
+    setBoards(copy);
+  };
+
+  const renameBoard = (oldName: string, newName: string) => {
+    if (!newName.trim()) return;
+
+    setBoards((prev) =>
+      prev.map((b) => (b === oldName ? newName.trim() : b))
+    );
+  };
+
+  /* =========================
+     Project CRUD
+  ========================= */
+
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const generatedColor = randomColor();
 
     const {
       data: { user },
@@ -159,36 +192,36 @@ const Projects: React.FC = () => {
         user_id: user.id,
         name: newName.trim(),
         description: injectBoardMarker(newDesc, newBoard),
-        color: generatedColor,
+        color: randomColor(),
       })
       .select()
       .single();
 
-    if (data) {
-      setProjects((prev) => [data, ...prev]);
-    }
+    if (data) setProjects((p) => [data, ...p]);
 
     setIsAdding(false);
     setNewName('');
     setNewDesc('');
-    setNewBoard('YelloSKYE');
   };
 
-  /** Open Edit Modal */
   const openEditModal = (project: Project) => {
     setEditingProject(project);
     setEditName(project.name);
     setEditDesc(cleanDescription(project.description || ''));
-    setEditBoard(getBoardForProject(project));
-    setIsEditing(true);
+
+    const slug = extractBoardSlug(project);
+    const board =
+      boards.find((b) => slugifyBoard(b) === slug) || boards[0];
+
+    setEditBoard(board);
+    setIsEditingProject(true);
   };
 
-  /** Save Edit */
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProject) return;
 
-    const { error } = await supabase
+    await supabase
       .from('projects')
       .update({
         name: editName.trim(),
@@ -196,412 +229,139 @@ const Projects: React.FC = () => {
       })
       .eq('id', editingProject.id);
 
-    if (error) {
-      console.error('update project error', error);
-      return;
-    }
-
     setProjects((prev) =>
       prev.map((p) =>
         p.id === editingProject.id
           ? {
-            ...p,
-            name: editName.trim(),
-            description: injectBoardMarker(editDesc, editBoard),
-          }
+              ...p,
+              name: editName.trim(),
+              description: injectBoardMarker(editDesc, editBoard),
+            }
           : p
       )
     );
 
-    setIsEditing(false);
+    setIsEditingProject(false);
     setEditingProject(null);
   };
 
-  /** Delete project */
-  const handleDeleteProject = async (projectId: string) => {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', projectId);
-
-    if (error) {
-      console.error('delete project error', error);
-      return;
-    }
-
-    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+  const handleDeleteProject = async (id: string) => {
+    await supabase.from('projects').delete().eq('id', id);
+    setProjects((p) => p.filter((x) => x.id !== id));
   };
-  /** Reorder inside same board */
-  const moveProject = (
-    board: BoardType,
-    projectId: string,
-    direction: 'up' | 'down'
-  ) => {
-    const boardProjects = projectsByBoard[board];
-    const index = boardProjects.findIndex((p) => p.id === projectId);
 
-    if (index === -1) return;
-
-    const swapIndex = direction === 'up' ? index - 1 : index + 1;
-    if (swapIndex < 0 || swapIndex >= boardProjects.length) return;
-
-    const reordered = [...boardProjects];
-    const temp = reordered[index];
-    reordered[index] = reordered[swapIndex];
-    reordered[swapIndex] = temp;
-
-    // rebuild global list preserving other boards order
-    const newAll: Project[] = [];
-
-    BOARDS.forEach((b) => {
-      if (b === board) {
-        newAll.push(...reordered);
-      } else {
-        newAll.push(...projectsByBoard[b]);
-      }
-    });
-
-    setProjects(newAll);
-  };
+  /* =========================
+     Render
+  ========================= */
 
   return (
     <div className="relative w-full space-y-8">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[40px] right-[80px] w-[420px] h-[420px] rounded-full blur-3xl opacity-[0.14] bg-yellow-200" />
-        <div className="absolute top-[220px] left-[40px] w-[360px] h-[360px] rounded-full blur-3xl opacity-[0.12] bg-yellow-200" />
-        <div className="absolute bottom-[120px] right-[60px] w-[520px] h-[520px] rounded-full blur-3xl opacity-[0.12] bg-yellow-200" />
-
-        <svg
-          className="absolute top-0 left-0 w-full h-full opacity-[0.05]"
-          viewBox="0 0 1800 950"
-          fill="none"
-        >
-          <circle cx="200" cy="160" r="5" fill="#facc15" />
-          <circle cx="460" cy="280" r="5" fill="#facc15" />
-          <circle cx="720" cy="200" r="5" fill="#facc15" />
-          <circle cx="1040" cy="260" r="5" fill="#facc15" />
-          <circle cx="1440" cy="220" r="5" fill="#facc15" />
-
-          <path
-            d="M200 160 L460 280 L720 200 L1040 260 L1440 220"
-            stroke="#facc15"
-            strokeWidth="2"
-          />
-        </svg>
-      </div>
-
-      {/* HEADER BAR */}
-      {/* TOP ACTION BAR */}
+      {/* TOP BAR */}
       <div className="relative z-10 flex items-center justify-between mb-6">
-        {/* Left text aligned to Raw Breakdown border */}
         <p className="text-[20px] font-semibold text-slate-900 tracking-tight">
-          Organize your work into projects, so you can actually finish them :)
+          Organize your work into projects
         </p>
 
-        <button
-          onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold border border-black/15 bg-white/70 backdrop-blur-xl shadow-sm hover:shadow-md transition-all"
-        >
-          <Plus size={18} style={{ color: accentColor }} />
-          Add new project
-        </button>
+        <div className="flex gap-3">
+          <input
+            value={newBoardName}
+            onChange={(e) => setNewBoardName(e.target.value)}
+            placeholder="New board"
+            className="px-4 py-2 border rounded-xl text-sm"
+          />
+          <button
+            onClick={addBoard}
+            className="px-4 py-2 rounded-xl border"
+          >
+            Add board
+          </button>
+
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold border bg-white shadow-sm"
+          >
+            <Plus size={18} style={{ color: accentColor }} />
+            Add project
+          </button>
+        </div>
       </div>
 
-      {/* BOARD GRID (fixed height so it NEVER goes below screen) */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(98vh-260px)] overflow-hidden">
-        {BOARDS.map((board) => (
+      {/* BOARD GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {boards.map((board) => (
           <div
             key={board}
-            className="bg-white/50 backdrop-blur-2xl rounded-3xl border border-black/10 shadow-sm overflow-hidden flex flex-col"
+            className="bg-white rounded-3xl border shadow-sm flex flex-col"
           >
-            {/* Board Header */}
-            <div className="px-6 py-4 border-b border-black/10 flex items-center justify-between">
-              <div>
-                <h2 className="text-[16px] font-semibold tracking-tight text-slate-900">
-                  {board}
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  {projectsByBoard[board].length} projects
-                </p>
-              </div>
+            {/* HEADER */}
+            <div className="px-6 py-4 border-b flex items-center justify-between gap-2">
+              <input
+                defaultValue={board}
+                onBlur={(e) => renameBoard(board, e.target.value)}
+                className="font-semibold bg-transparent outline-none"
+              />
 
-              <div className="w-10 h-10 rounded-2xl border border-black/10 bg-white/70 shadow-sm flex items-center justify-center">
-                <Folder size={18} className="text-slate-600" />
+              <div className="flex gap-2">
+                <button onClick={() => moveBoard(board, 'left')}>
+                  <ArrowUp size={16} />
+                </button>
+                <button onClick={() => moveBoard(board, 'right')}>
+                  <ArrowDown size={16} />
+                </button>
+                <button onClick={() => deleteBoard(board)}>
+                  <Trash2 size={16} className="text-rose-500" />
+                </button>
               </div>
             </div>
 
-            {/* Internal scroll section */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {projectsByBoard[board].map((project) => {
-                const projectLogs = logs.filter((l: any) => l.project_id === project.id);
+            {/* PROJECT LIST */}
+            <div className="p-4 space-y-4">
+              {(projectsByBoard[board] || []).map((project) => {
+                const projectLogs = logs.filter(
+                  (l: any) => l.project_id === project.id
+                );
+
                 const totalTime = projectLogs.reduce(
-                  (acc, l) => acc + l.timeSpent,
+                  (acc, l) => acc + (l.timeSpent || 0),
                   0
                 );
 
                 return (
                   <div
                     key={project.id}
-                    className="bg-white/70 backdrop-blur-xl p-4 rounded-3xl border border-black/10 shadow-sm hover:shadow-md transition-all"
+                    className="bg-white p-4 rounded-2xl border"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {/* auto icon */}
-                        <div
-                          className="w-11 h-11 rounded-2xl border border-black/10 shadow-sm flex-shrink-0"
-                          style={{
-                            background: `radial-gradient(circle at top left, ${project.color} 0%, rgba(255,255,255,0.85) 75%)`,
-                          }}
-                        />
-
-                        <div className="min-w-0">
-                          <h3 className="text-[15px] font-semibold tracking-tight text-slate-900 truncate">
-                            {project.name}
-                          </h3>
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                            {cleanDescription(project.description || '') ||
-                              'No description'}
-                          </p>
-                        </div>
+                    <div className="flex justify-between">
+                      <div>
+                        <h3 className="font-semibold">{project.name}</h3>
+                        <p className="text-xs text-slate-500">
+                          {cleanDescription(project.description || '')}
+                        </p>
                       </div>
 
-                      <button
-                        onClick={() => openEditModal(project)}
-                        className="w-9 h-9 rounded-xl border border-black/10 bg-white/70 shadow-sm flex items-center justify-center hover:bg-white transition"
-                      >
-                        <Pencil size={15} className="text-slate-500" />
+                      <button onClick={() => openEditModal(project)}>
+                        <Pencil size={16} />
                       </button>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 px-3 py-2 rounded-full bg-white/70 border border-black/10">
-                        <CheckCircle size={14} className="text-slate-400" />
-                        {projectLogs.length} logs
-                      </div>
-
-                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 px-3 py-2 rounded-full bg-white/70 border border-black/10">
-                        <Clock size={14} className="text-slate-400" />
-                        {Math.round(totalTime / 60)}h
-                      </div>
+                    <div className="flex justify-between mt-3 text-xs">
+                      <span>{projectLogs.length} logs</span>
+                      <span>{Math.round(totalTime / 60)}h</span>
                     </div>
 
-                    {/* reorder + delete */}
-                    <div className="mt-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => moveProject(board, project.id, 'up')}
-                          className="w-9 h-9 rounded-xl border border-black/10 bg-white/70 shadow-sm flex items-center justify-center hover:bg-white transition"
-                        >
-                          <ArrowUp size={16} className="text-slate-500" />
-                        </button>
-
-                        <button
-                          onClick={() => moveProject(board, project.id, 'down')}
-                          className="w-9 h-9 rounded-xl border border-black/10 bg-white/70 shadow-sm flex items-center justify-center hover:bg-white transition"
-                        >
-                          <ArrowDown size={16} className="text-slate-500" />
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => handleDeleteProject(project.id)}
-                        className="w-9 h-9 rounded-xl border border-black/10 bg-white/70 shadow-sm flex items-center justify-center hover:bg-white transition"
-                      >
-                        <Trash2 size={16} className="text-rose-500" />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleDeleteProject(project.id)}
+                      className="mt-2 text-rose-500 text-xs"
+                    >
+                      Delete
+                    </button>
                   </div>
                 );
               })}
-
-              {projectsByBoard[board].length === 0 && (
-                <div className="text-sm text-slate-500 px-4 py-10 text-center border border-dashed border-black/10 rounded-3xl bg-white/40">
-                  No projects yet.
-                </div>
-              )}
             </div>
           </div>
         ))}
       </div>
-
-      {/* ADD MODAL */}
-      {isAdding && (
-        <div className="fixed inset-0 z-[999] bg-black/30 backdrop-blur-sm flex items-center justify-center px-6">
-          <div className="w-full max-w-[720px] bg-white rounded-[34px] border border-black/15 shadow-xl overflow-hidden">
-            <div className="p-6 border-b border-black/10 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">
-                  Create new project
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Give your project a name, board, and optional description.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setIsAdding(false)}
-                className="w-10 h-10 rounded-xl border border-black/10 bg-white flex items-center justify-center"
-              >
-                <X size={18} className="text-slate-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddProject} className="p-6 space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Project name
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Eg. Website Revamp"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Board
-                  </label>
-                  <select
-                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-semibold text-slate-700 cursor-pointer"
-                    value={newBoard}
-                    onChange={(e) => setNewBoard(e.target.value as BoardType)}
-                  >
-                    {BOARDS.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Description (optional)
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                  placeholder="What is this project about?"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAdding(false)}
-                  className="px-5 py-3 rounded-2xl font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-2xl font-semibold text-slate-900 border border-black/10 bg-white shadow-sm hover:shadow-md transition-all"
-                >
-                  Create project
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* EDIT MODAL */}
-      {isEditing && editingProject && (
-        <div className="fixed inset-0 z-[999] bg-black/30 backdrop-blur-sm flex items-center justify-center px-6">
-          <div className="w-full max-w-[720px] bg-white rounded-[34px] border border-black/15 shadow-xl overflow-hidden">
-            <div className="p-6 border-b border-black/10 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">
-                  Edit project
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Update the project details or move it to another board.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setIsEditing(false)}
-                className="w-10 h-10 rounded-xl border border-black/10 bg-white flex items-center justify-center"
-              >
-                <X size={18} className="text-slate-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveEdit} className="p-6 space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Project name
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Board
-                  </label>
-                  <select
-                    className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-semibold text-slate-700 cursor-pointer"
-                    value={editBoard}
-                    onChange={(e) => setEditBoard(e.target.value as BoardType)}
-                  >
-                    {BOARDS.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Description
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-2xl border border-black/10 bg-white outline-none text-sm font-medium text-slate-800"
-                  value={editDesc}
-                  onChange={(e) => setEditDesc(e.target.value)}
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="px-5 py-3 rounded-2xl font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-2xl font-semibold text-slate-900 border border-black/10 bg-white shadow-sm hover:shadow-md transition-all"
-                >
-                  Save changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

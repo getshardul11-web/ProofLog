@@ -111,11 +111,7 @@ const Settings: React.FC = () => {
         <div className="bg-white/60 backdrop-blur-2xl p-7 rounded-3xl border border-slate-200/70 shadow-sm">
           <div className="flex items-center gap-4 mb-8">
             <div className="relative">
-              <img
-                src={"https://i.ibb.co/jPwtXWcK/Profile-picture.png"}
-                alt="User"
-                className="w-20 h-20 rounded-full border border-slate-200/70 shadow-sm"
-              />
+            
 
               <div
                 className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full border border-slate-200/70 shadow-sm"
