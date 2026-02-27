@@ -8,29 +8,47 @@ export default function Login() {
   const [isSignup, setIsSignup] = useState(false);
 
   const handleAuth = async () => {
-    setLoading(true);
+  console.log("AUTH CLICKED"); // ← ADD THIS LINE
+  setLoading(true);
 
-    try {
-      if (isSignup) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        alert("Signup successful. You can now log in.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-      }
-    } catch (err: any) {
-      alert(err.message);
+  try {
+    if (!email || !password) {
+      alert("Enter email and password");
+      return;
     }
 
+    console.log("Auth start", { email, isSignup });
+
+    if (isSignup) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      console.log("Signup response:", { data, error });
+
+      if (error) throw error;
+
+      alert("Signup successful. Check your email if confirmation is on.");
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      console.log("Login response:", { data, error });
+
+      if (error) throw error;
+
+      alert("Login success");
+    }
+  } catch (err: any) {
+    console.error("AUTH ERROR:", err);
+    alert(err.message || "Auth failed");
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">

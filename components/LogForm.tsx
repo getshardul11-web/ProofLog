@@ -1,6 +1,5 @@
-
+import { supabase } from '../services/supabase';
 import React, { useState } from 'react';
-import { db } from '../services/storage';
 import { Category, Status, WorkLog, Project } from '../types';
 import { X, Tag, Link as LinkIcon, Image as ImageIcon, Plus } from 'lucide-react';
 
@@ -20,22 +19,25 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved, projects }) => {
   const [tags, setTags] = useState<string>('');
   const [links, setLinks] = useState<string>('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newLog: WorkLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId: db.getUser().id,
-      title,
-      impact,
-      category,
-      status,
-      timeSpent,
-      projectId,
-      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-      links: links.split('\n').map(l => l.trim()).filter(Boolean),
-      createdAt: Date.now()
-    };
-    db.saveLog(newLog);
+    const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) return;
+
+await supabase.from('logs').insert({
+  user_id: user.id,
+  title,
+  impact,
+  category,
+  status,
+  time_spent: timeSpent,
+  project_id: projectId || null,
+  tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+  links: links.split('\n').map(l => l.trim()).filter(Boolean),
+});
     onSaved();
     onClose();
   };

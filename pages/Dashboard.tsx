@@ -1,6 +1,6 @@
+import { supabase } from '../services/supabase';
 import { Timer, CalendarDays, CheckCircle2, FolderKanban, Flame } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
-import { db } from '../services/storage';
 import { WorkLog, Project, ACCENT_COLORS, Category } from '../types';
 import { STATUS_COLORS, CATEGORY_COLORS } from '../constants';
 import { Clock, ChevronRight } from 'lucide-react';
@@ -23,14 +23,37 @@ const Dashboard: React.FC = () => {
   const [logs, setLogs] = useState<WorkLog[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
 
-  const user = db.getUser();
-  const accentColor =
-    ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430';
+
+  const accentColor = '#F4C430';
 
   useEffect(() => {
-    setLogs(db.getLogs());
-    setProjects(db.getProjects());
-  }, []);
+  const loadData = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    // fetch projects
+    const { data: projectsData } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    // fetch logs
+    const { data: logsData } = await supabase
+      .from('logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    setProjects(projectsData || []);
+    setLogs(logsData || []);
+  };
+
+  loadData();
+}, []);
 
   // ---- Time helpers
   const isSameDay = (a: number, b: number) => {

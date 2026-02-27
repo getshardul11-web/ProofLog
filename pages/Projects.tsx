@@ -1,5 +1,5 @@
+import { supabase } from '../services/supabase';
 import React, { useState, useEffect, useMemo } from 'react';
-import { db } from '../services/storage';
 import { Project, ACCENT_COLORS } from '../types';
 import {
   Plus,
@@ -16,7 +16,7 @@ import {
 type BoardType = 'YelloSKYE' | 'Enterprise' | 'Building Cool Stuff';
 
 const BOARDS: BoardType[] = ['YelloSKYE', 'Enterprise', 'Building Cool Stuff'];
-
+const [logs, setLogs] = useState<any[]>([]);
 /** Random pleasing palette */
 const PROJECT_COLORS = [
   '#f59e0b', // amber
@@ -64,15 +64,36 @@ const Projects: React.FC = () => {
   const [editDesc, setEditDesc] = useState('');
   const [editBoard, setEditBoard] = useState<BoardType>('Enterprise');
 
-  const user = db.getUser();
-  const accentColor =
-    ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430';
 
-  const logs = db.getLogs();
+  const accentColor = '#F4C430';
+
+
 
   useEffect(() => {
-    setProjects(db.getProjects());
-  }, []);
+  const loadData = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { data: projectsData } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    const { data: logsData } = await supabase
+      .from('logs')
+      .select('*')
+      .eq('user_id', user.id);
+
+    setProjects(projectsData || []);
+    setLogs(logsData || []);
+  };
+
+  loadData();
+}, []);
 
   /** Safe board extraction */
   const getBoardForProject = (project: Project): BoardType => {
@@ -111,22 +132,31 @@ const Projects: React.FC = () => {
   }, [projects]);
 
   /** Add Project */
-  const handleAddProject = (e: React.FormEvent) => {
+const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const generatedColor = randomColor();
 
-    const project: Project = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId: user.id,
-      name: newName.trim(),
-      description: injectBoardMarker(newDesc, newBoard),
-      color: generatedColor,
-      createdAt: Date.now(),
-    };
+    const {
+  data: { user },
+} = await supabase.auth.getUser();
 
-    db.saveProject(project);
-    setProjects((prev) => [...prev, project]);
+if (!user) return;
+
+const { data } = await supabase
+  .from('projects')
+  .insert({
+    user_id: user.id,
+    name: newName.trim(),
+    description: injectBoardMarker(newDesc, newBoard),
+    color: generatedColor,
+  })
+  .select()
+  .single();
+
+if (data) {
+  setProjects((prev) => [data, ...prev]);
+}
 
     setIsAdding(false);
     setNewName('');
@@ -144,35 +174,53 @@ const Projects: React.FC = () => {
   };
 
   /** Save Edit */
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveEdit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!editingProject) return;
 
-    if (!editingProject) return;
-
-    const updated: Project = {
-      ...editingProject,
+  const { error } = await supabase
+    .from('projects')
+    .update({
       name: editName.trim(),
       description: injectBoardMarker(editDesc, editBoard),
-    };
+    })
+    .eq('id', editingProject.id);
 
-    db.saveProject(updated);
+  if (error) {
+    console.error('update project error', error);
+    return;
+  }
 
-    setProjects((prev) =>
-      prev.map((p) => (p.id === updated.id ? updated : p))
-    );
+  setProjects((prev) =>
+    prev.map((p) =>
+      p.id === editingProject.id
+        ? {
+            ...p,
+            name: editName.trim(),
+            description: injectBoardMarker(editDesc, editBoard),
+          }
+        : p
+    )
+  );
 
-    setIsEditing(false);
-    setEditingProject(null);
-  };
+  setIsEditing(false);
+  setEditingProject(null);
+};
 
   /** Delete project */
-  const handleDeleteProject = (projectId: string) => {
-    const filtered = projects.filter((p) => p.id !== projectId);
-    setProjects(filtered);
+  const handleDeleteProject = async (projectId: string) => {
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId);
 
-    db.saveProjects(filtered);
-  };
+  if (error) {
+    console.error('delete project error', error);
+    return;
+  }
 
+  setProjects((prev) => prev.filter((p) => p.id !== projectId));
+};
   /** Reorder inside same board */
   const moveProject = (
     board: BoardType,
@@ -204,7 +252,6 @@ const Projects: React.FC = () => {
     });
 
     setProjects(newAll);
-    db.saveProjects(newAll);
   };
 
   return (
@@ -277,7 +324,7 @@ const Projects: React.FC = () => {
             {/* Internal scroll section */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {projectsByBoard[board].map((project) => {
-                const projectLogs = logs.filter((l) => l.projectId === project.id);
+                const projectLogs = logs.filter((l: any) => l.project_id === project.id);
                 const totalTime = projectLogs.reduce(
                   (acc, l) => acc + l.timeSpent,
                   0

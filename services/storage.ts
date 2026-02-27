@@ -1,200 +1,142 @@
-import { WorkLog, Project, UserProfile, Category, Status } from '../types';
-
-// LocalStorage Keys
-const STORAGE_KEYS = {
-  LOGS: 'prooflog_logs',
-  PROJECTS: 'prooflog_projects',
-  USER: 'prooflog_user',
-};
-
-const DEFAULT_USER: UserProfile = {
-  id: 'user_1',
-  name: 'Shardul G',
-  email: 'sg.work004@gmail.com',
-  photoUrl: 'https://i.ibb.co/jPwtXWcK/Profile-picture.png',
-  accentColor: 'blue',
-  reminderTime: '17:00',
-};
-
-const INITIAL_PROJECTS: Project[] = [
-  {
-    id: 'p1',
-    userId: 'user_1',
-    name: 'Brand Refresh',
-    description: 'Overhaul of corporate identity',
-    color: '#8b5cf6',
-    createdAt: Date.now(),
-  },
-  {
-    id: 'p2',
-    userId: 'user_1',
-    name: 'Customer Outreach',
-    description: 'Q3 Sales campaign',
-    color: '#f59e0b',
-    createdAt: Date.now(),
-  },
-];
-
-const INITIAL_LOGS: WorkLog[] = [
-  {
-    id: 'l1',
-    userId: 'user_1',
-    title: 'Logo Iteration v2',
-    impact: 'Finalized the core brand symbol for stakeholders',
-    category: Category.DESIGN,
-    status: Status.DONE,
-    timeSpent: 120,
-    tags: ['branding', 'vector'],
-    projectId: 'p1',
-    links: [],
-    createdAt: Date.now() - 86400000 * 1,
-  },
-  {
-    id: 'l2',
-    userId: 'user_1',
-    title: 'Outreach Pipeline Research',
-    impact: 'Identified 50 high-value leads for Q4',
-    category: Category.RESEARCH,
-    status: Status.IN_PROGRESS,
-    timeSpent: 90,
-    tags: ['sales', 'leads'],
-    projectId: 'p2',
-    links: ['https://notion.so/leads-database'],
-    createdAt: Date.now() - 86400000 * 2,
-  },
-  {
-    id: 'l3',
-    userId: 'user_1',
-    title: 'Weekly Sync with Product Team',
-    impact: 'Resolved blockers for the UI migration',
-    category: Category.MEETINGS,
-    status: Status.DONE,
-    timeSpent: 60,
-    tags: ['sync', 'internal'],
-    projectId: 'p1',
-    links: [],
-    createdAt: Date.now() - 3600000,
-  },
-];
-
-// Utility: Ensure every log has a stable order value
-const normalizeLogOrder = (logs: WorkLog[]) => {
-  return logs
-    .map((log, idx) => ({
-      ...log,
-      order: (log as any).order ?? idx,
-    }))
-    .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
-    .map((log, idx) => ({
-      ...log,
-      order: idx,
-    }));
-};
+import { WorkLog, Project, UserProfile } from '../types';
+import { supabase } from './supabase';
 
 export const db = {
-  // -------------------------
-  // LOGS
-  // -------------------------
-  getLogs: (): WorkLog[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.LOGS);
-
-    if (!data) {
-      const normalized = normalizeLogOrder(INITIAL_LOGS);
-      localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(normalized));
-      return normalized;
-    }
-
-    const parsed = JSON.parse(data) as WorkLog[];
-    return normalizeLogOrder(parsed);
-  },
-
-  saveLogs: (logs: WorkLog[]) => {
-    const normalized = normalizeLogOrder(logs);
-    localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(normalized));
-  },
-
-  saveLog: (log: WorkLog) => {
-    const logs = db.getLogs();
-
-    // Add newest log at top, but still assign order properly
-    const updated = [
-      { ...log, order: 0 },
-      ...logs.map((l: any) => ({ ...l, order: (l.order ?? 0) + 1 })),
-    ];
-
-    db.saveLogs(updated);
-  },
-
-  getLogById: (id: string): WorkLog | null => {
-    const logs = db.getLogs();
-    return logs.find((l) => l.id === id) || null;
-  },
-
-  updateLog: (id: string, updates: Partial<WorkLog>) => {
-    const logs = db.getLogs();
-
-    const updatedLogs = logs.map((log: any) =>
-      log.id === id ? { ...log, ...updates } : log
-    );
-
-    db.saveLogs(updatedLogs);
-  },
-
-  deleteLog: (id: string) => {
-    const logs = db.getLogs();
-    const updated = logs.filter((l) => l.id !== id);
-    db.saveLogs(updated);
-  },
-
-  // -------------------------
-  // PROJECTS
-  // -------------------------
-  getProjects: (): Project[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.PROJECTS);
-
-    if (!data) {
-      localStorage.setItem(
-        STORAGE_KEYS.PROJECTS,
-        JSON.stringify(INITIAL_PROJECTS)
-      );
-      return INITIAL_PROJECTS;
-    }
-
-    return JSON.parse(data);
-  },
-
-  saveProject: (project: Project) => {
-    const projects = db.getProjects();
-    localStorage.setItem(
-      STORAGE_KEYS.PROJECTS,
-      JSON.stringify([...projects, project])
-    );
-  },
-
-  // -------------------------
+  // =========================
   // USER
-  // -------------------------
-  getUser: (): UserProfile => {
-    const data = localStorage.getItem(STORAGE_KEYS.USER);
+  // =========================
+  async getUser(): Promise<UserProfile | null> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!data) {
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(DEFAULT_USER));
-      return DEFAULT_USER;
+    if (!user) return null;
+
+    // fetch profile row
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error('getUser profile error', error);
+      return null;
     }
 
-    return JSON.parse(data);
+    return {
+      id: user.id,
+      name: data?.name || user.email?.split('@')[0] || 'User',
+      email: user.email || '',
+      photoUrl: data?.avatar_url || '',
+      accentColor: data?.accent_color || 'blue',
+      reminderTime: data?.reminder_time || '17:00',
+    };
   },
 
-  updateUser: (user: UserProfile) => {
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+  async updateUser(user: Partial<UserProfile>) {
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+
+    if (!authUser) return;
+
+    const { error } = await supabase.from('profiles').upsert({
+      id: authUser.id,
+      name: user.name,
+      avatar_url: user.photoUrl,
+      accent_color: user.accentColor,
+      reminder_time: user.reminderTime,
+    });
+
+    if (error) console.error('updateUser error', error);
   },
 
-  // -------------------------
-  // RESET ALL (OPTIONAL)
-  // -------------------------
-  clearAll: () => {
-    localStorage.removeItem(STORAGE_KEYS.LOGS);
-    localStorage.removeItem(STORAGE_KEYS.PROJECTS);
-    localStorage.removeItem(STORAGE_KEYS.USER);
+  // =========================
+  // PROJECTS
+  // =========================
+  async getProjects(): Promise<Project[]> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('getProjects error', error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  async saveProject(project: Project) {
+    const { error } = await supabase.from('projects').upsert(project);
+
+    if (error) console.error('saveProject error', error);
+  },
+
+  async deleteProject(projectId: string) {
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
+
+    if (error) console.error('deleteProject error', error);
+  },
+
+  // =========================
+  // LOGS
+  // =========================
+  async getLogs(): Promise<WorkLog[]> {
+    const { data, error } = await supabase
+      .from('logs')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('getLogs error', error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  async saveLog(log: WorkLog) {
+    const { error } = await supabase.from('logs').insert(log);
+
+    if (error) console.error('saveLog error', error);
+  },
+
+  async updateLog(id: string, updates: Partial<WorkLog>) {
+    const { error } = await supabase
+      .from('logs')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) console.error('updateLog error', error);
+  },
+
+  async deleteLog(id: string) {
+    const { error } = await supabase.from('logs').delete().eq('id', id);
+
+    if (error) console.error('deleteLog error', error);
+  },
+
+  async getLogById(id: string): Promise<WorkLog | null> {
+    const { data, error } = await supabase
+      .from('logs')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) return null;
+    return data;
+  },
+
+  // =========================
+  // DEV RESET (optional)
+  // =========================
+  clearAll: async () => {
+    console.warn('clearAll is disabled in Supabase mode');
   },
 };
