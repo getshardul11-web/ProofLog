@@ -142,9 +142,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
           {/* MAIN */}
           <div className="flex-1 flex flex-col">
             {/* TOP BAR */}
-            <div style={{ color: 'red', fontWeight: 700 }}>
-              DEBUG BUILD v2
-            </div>
+
             <div className="flex items-center justify-between px-10 py-6 border-b border-black/20 bg-white">
               <h1 className="text-[20px] font-bold tracking-tight text-slate-900">
                 {NAV_ITEMS.find((n) => n.path === location.pathname)?.label ||

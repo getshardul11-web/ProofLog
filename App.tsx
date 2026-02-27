@@ -15,14 +15,15 @@ import { supabase } from './services/supabase';
 const App: React.FC = () => {
   const [showLogModal, setShowLogModal] = useState(false);
   const [logsUpdated, setLogsUpdated] = useState(0);
-  const [projects, setProjects] = useState(db.getProjects());
+  const [projects, setProjects] = useState<any[]>([]);
 
   // 🔐 Auth state
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const refreshProjects = () => {
-    setProjects(db.getProjects());
+  const refreshProjects = async () => {
+    const p = await db.getProjects();
+    setProjects(p || []);
   };
 
   const handleLogSaved = () => {
