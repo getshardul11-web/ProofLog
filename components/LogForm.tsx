@@ -21,23 +21,26 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved, projects }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const {
-  data: { user },
-} = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-if (!user) return;
+    const { error } = await supabase.from('logs').insert({
+      user_id: user.id,
+      title,
+      impact,
+      category,
+      status,
+      time_spent: timeSpent,
+      project_id: projectId || null,
+      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+      links: links.split('\n').map(l => l.trim()).filter(Boolean),
+    });
 
-await supabase.from('logs').insert({
-  user_id: user.id,
-  title,
-  impact,
-  category,
-  status,
-  time_spent: timeSpent,
-  project_id: projectId || null,
-  tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-  links: links.split('\n').map(l => l.trim()).filter(Boolean),
-});
+    if (error) {
+      alert('Failed to save log: ' + error.message);
+      return;
+    }
+
     onSaved();
     onClose();
   };

@@ -98,7 +98,22 @@ export const db = {
       return [];
     }
 
-    return data || [];
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      userId: row.user_id ?? row.userId ?? '',
+      title: row.title,
+      impact: row.impact,
+      category: row.category,
+      status: row.status,
+      timeSpent: row.time_spent ?? row.timeSpent ?? 0,
+      tags: row.tags || [],
+      links: row.links || [],
+      projectId: row.project_id ?? row.projectId ?? '',
+      proofUrl: row.proof_url ?? row.proofUrl,
+      createdAt: row.created_at
+        ? new Date(row.created_at).getTime()
+        : (row.createdAt || Date.now()),
+    }));
   },
 
   async saveLog(log: WorkLog) {
