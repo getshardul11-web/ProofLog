@@ -1,5 +1,5 @@
 import { supabase } from '../services/supabase';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Project, ProjectBoard } from '../types';
 import {
   Plus,
@@ -62,6 +62,25 @@ const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [boards, setBoards] = useState<ProjectBoard[]>([]);
+  const userIdRef = useRef<string | null>(null);
+
+  const saveBoards = (newBoards: ProjectBoard[]) => {
+    setBoards(newBoards);
+    if (userIdRef.current) {
+      localStorage.setItem(
+        `prooflog-boards-${userIdRef.current}`,
+        JSON.stringify(newBoards)
+      );
+    }
+  };
+
+  const makeBoard = (name: string, position: number): ProjectBoard => ({
+    id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    user_id: userIdRef.current ?? '',
+    name,
+    position,
+    created_at: new Date().toISOString(),
+  });
 
   const [isAdding, setIsAdding] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -93,38 +112,40 @@ const Projects: React.FC = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || !mounted) return;
 
-        // 1. Load Boards
-        let { data: boardsData, error: boardsError } = await supabase
-          .from('pollen_boards')
-          .select('*')
-          .order('position', { ascending: true });
+        userIdRef.current = user.id;
 
-        if (boardsError) console.error('Error loading boards:', boardsError);
+        // 1. Load Boards from localStorage
+        const savedBoards = localStorage.getItem(`prooflog-boards-${user.id}`);
+        let boardsToUse: ProjectBoard[] = [];
 
-        // SEED BOARDS if none exist
-        if (!boardsData || boardsData.length === 0) {
-          console.log('No boards found, seeding defaults...');
-          const seed = DEFAULT_BOARDS.map((name, index) => ({
-            user_id: user.id,
-            name,
-            position: index
-          }));
-
-          const { data: seeded, error: seedError } = await supabase
-            .from('pollen_boards')
-            .insert(seed)
-            .select('*');
-
-          if (!seedError && seeded) {
-            boardsData = seeded;
+        if (savedBoards) {
+          try {
+            const parsed = JSON.parse(savedBoards);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              boardsToUse = parsed;
+            }
+          } catch {
+            // ignore malformed data
           }
         }
 
-        if (mounted && boardsData) {
-          setBoards(boardsData);
-          if (boardsData[0]) {
-            setNewBoard(boardsData[0].name);
-            setEditBoard(boardsData[0].name);
+        // Seed defaults if nothing saved
+        if (boardsToUse.length === 0) {
+          boardsToUse = DEFAULT_BOARDS.map((name, index) => ({
+            id: `local-${Date.now()}-${index}`,
+            user_id: user.id,
+            name,
+            position: index,
+            created_at: new Date().toISOString(),
+          }));
+          localStorage.setItem(`prooflog-boards-${user.id}`, JSON.stringify(boardsToUse));
+        }
+
+        if (mounted) {
+          setBoards(boardsToUse);
+          if (boardsToUse[0]) {
+            setNewBoard(boardsToUse[0].name);
+            setEditBoard(boardsToUse[0].name);
           }
         }
 
@@ -184,89 +205,38 @@ const Projects: React.FC = () => {
      Board actions
   ========================= */
 
-  const addBoard = async () => {
-    if (!newBoardName.trim() || !supabase) return;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const name = newBoardName.trim();
-    const { data: newBoardObj, error } = await supabase
-      .from('pollen_boards')
-      .insert({
-        user_id: user.id,
-        name,
-        position: boards.length
-      })
-      .select('*')
-      .single();
-
-    if (error) {
-      alert('Failed to add board: ' + error.message);
-      return;
-    }
-
-    if (newBoardObj) setBoards([...boards, newBoardObj]);
+  const addBoard = () => {
+    if (!newBoardName.trim()) return;
+    const newBoardObj = makeBoard(newBoardName.trim(), boards.length);
+    saveBoards([...boards, newBoardObj]);
     setNewBoardName('');
   };
 
-  const deleteBoard = async (board: ProjectBoard) => {
-    if (boards.length <= 1 || !supabase) return;
+  const deleteBoard = (board: ProjectBoard) => {
+    if (boards.length <= 1) return;
     if (!window.confirm(`Delete board "${board.name}"? Projects will move to the first board.`)) return;
-
-    const { error } = await supabase
-      .from('pollen_boards')
-      .delete()
-      .eq('id', board.id);
-
-    if (error) {
-      alert('Failed to delete board: ' + error.message);
-      return;
-    }
-
-    setBoards(boards.filter((b) => b.id !== board.id));
+    saveBoards(boards.filter((b) => b.id !== board.id));
   };
 
-  const moveBoard = async (board: ProjectBoard, dir: 'left' | 'right') => {
+  const moveBoard = (board: ProjectBoard, dir: 'left' | 'right') => {
     const index = boards.findIndex(b => b.id === board.id);
-    if (index === -1 || !supabase) return;
+    if (index === -1) return;
 
     const swap = dir === 'left' ? index - 1 : index + 1;
     if (swap < 0 || swap >= boards.length) return;
 
     const newBoards = [...boards];
     [newBoards[index], newBoards[swap]] = [newBoards[swap], newBoards[index]];
-
-    setBoards(newBoards);
-
-    // Update positions in DB
-    const updates = newBoards.map((b, i) => ({
-      id: b.id,
-      user_id: b.user_id,
-      name: b.name,
-      position: i
-    }));
-
-    await supabase.from('pollen_boards').upsert(updates);
+    saveBoards(newBoards);
   };
 
   const renameBoard = async (board: ProjectBoard, newName: string) => {
     if (!newName.trim() || board.name === newName || !supabase) return;
 
-    const { error } = await supabase
-      .from('pollen_boards')
-      .update({ name: newName.trim() })
-      .eq('id', board.id);
-
-    if (error) {
-      alert('Failed to rename board: ' + error.message);
-      return;
-    }
-
     const oldSlug = slugifyBoard(board.name);
-    const newSlug = slugifyBoard(newName);
+    const newSlug = slugifyBoard(newName.trim());
 
-    setBoards(boards.map((b) => (b.id === board.id ? { ...b, name: newName.trim() } : b)));
+    saveBoards(boards.map((b) => (b.id === board.id ? { ...b, name: newName.trim() } : b)));
 
     // Update local projects
     setProjects(prev => prev.map(p =>
