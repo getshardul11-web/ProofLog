@@ -38,6 +38,14 @@ export interface Project {
   createdAt: number;
 }
 
+export interface ProjectBoard {
+  id: string;
+  user_id: string;
+  name: string;
+  position: number;
+  created_at?: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
