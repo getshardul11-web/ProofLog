@@ -133,7 +133,6 @@ const App: React.FC = () => {
         <LogForm
           onClose={() => setShowLogModal(false)}
           onSaved={handleLogSaved}
-          projects={[]}
         />
       )}
     </Router>

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../services/storage';
 import { WorkLog, Status, ACCENT_COLORS } from '../types';
-import { generateSmartReport } from '../services/gemini';
+import { generateSmartReport, REPORT_TEMPLATES, ReportTemplateKey } from '../services/gemini';
 import {
   Sparkles,
   Copy,
@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Mail,
   NotepadText,
+  ChevronDown,
 } from 'lucide-react';
 
 const Reports: React.FC = () => {
@@ -22,6 +23,10 @@ const Reports: React.FC = () => {
 
   const [user, setUser] = useState<any>(null);
   const [accentColor, setAccentColor] = useState('#F4C430');
+
+  const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplateKey>('weekly');
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
+  const templateMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -45,14 +50,22 @@ const Reports: React.FC = () => {
     };
 
     loadData();
-    return () => {
-      mounted = false;
+    return () => { mounted = false; };
+  }, []);
+
+  // Close template menu when clicking outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (templateMenuRef.current && !templateMenuRef.current.contains(e.target as Node)) {
+        setShowTemplateMenu(false);
+      }
     };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
   const isHeading = (line: string) => {
     const t = line.trim().toLowerCase();
-
     return (
       t === 'overview' ||
       t === 'key accomplishments' ||
@@ -62,7 +75,18 @@ const Reports: React.FC = () => {
       t === 'next steps' ||
       t === 'blockers' ||
       t === 'wins' ||
-      t === 'in progress'
+      t === 'in progress' ||
+      t === 'what i completed' ||
+      t === 'what i\'m working on next' ||
+      t === 'any blockers' ||
+      t === 'impact highlights' ||
+      t === 'progress overview' ||
+      t === 'attention items' ||
+      t === 'what went well' ||
+      t === 'what could be improved' ||
+      t === 'key learnings and action items' ||
+      t === 'status overview' ||
+      t === 'key risks'
     );
   };
 
@@ -70,7 +94,9 @@ const Reports: React.FC = () => {
     return text
       .replace(/```[\s\S]*?```/g, '')
       .replace(/\*\*/g, '')
-      .replace(/###/g, '')
+      .replace(/###\s*/g, '')
+      .replace(/##\s*/g, '')
+      .replace(/#\s*/g, '')
       .replace(/\*/g, '')
       .replace(/_/g, '')
       .replace(/\r\n/g, '\n')
@@ -79,28 +105,14 @@ const Reports: React.FC = () => {
 
   const formatReportText = (raw: string) => {
     if (!raw) return '';
-
     let text = stripMarkdown(raw);
-
-    text = text.replace(
-      /here is a professional summary[\s\S]*?impact\.\s*/gi,
-      ''
-    );
-
+    text = text.replace(/here is a professional summary[\s\S]*?impact\.\s*/gi, '');
     text = text.replace(/---/g, '');
-
-    text = text
-      .replace(/1\.\s*/g, '')
-      .replace(/2\.\s*/g, '')
-      .replace(/3\.\s*/g, '');
-
+    text = text.replace(/^\d+\.\s*/gm, '');
     text = text.replace(/^\*\s+/gm, '• ');
     text = text.replace(/^\-\s+/gm, '• ');
-
     text = text.replace(/^•\s*$/gm, '');
-
     text = text.replace(/\n{3,}/g, '\n\n');
-
     return text.trim();
   };
 
@@ -111,34 +123,30 @@ const Reports: React.FC = () => {
 
   const runWithTimeout = async <T,>(promise: Promise<T>, ms: number) => {
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Request timed out')), ms)
+      setTimeout(() => reject(new Error('Request timed out after 30s')), ms)
     );
-
     return Promise.race([promise, timeoutPromise]);
   };
 
   const handleGenerateAI = async () => {
     if (logs.length === 0) return;
-
     setIsGenerating(true);
     setReportText('');
 
     try {
-      // LIMIT to prevent Gemini choking
-      const safeLogs = logs
-        .slice(0, 25) // max 25 logs only
-        .map((l) => ({
-          title: l.title,
-          impact: l.impact,
-          status: l.status,
-          timeSpent: l.timeSpent,
-          category: l.category,
-          createdAt: l.createdAt,
-        }));
+      const safeLogs = logs.slice(0, 25).map((l) => ({
+        title: l.title,
+        impact: l.impact,
+        status: l.status,
+        timeSpent: l.timeSpent,
+        category: l.category,
+        createdAt: l.createdAt,
+      }));
 
-      console.log('Sending logs to Gemini:', safeLogs);
-
-      const result = await runWithTimeout(generateSmartReport(safeLogs as any), 25000);
+      const result = await runWithTimeout(
+        generateSmartReport(safeLogs as any, selectedTemplate),
+        30000
+      );
 
       if (!result || typeof result !== 'string') {
         throw new Error('Gemini returned empty response');
@@ -147,10 +155,8 @@ const Reports: React.FC = () => {
       setReportText(result);
     } catch (err: any) {
       console.error('Report generation failed:', err);
-
       setReportText(
-        `Can't generate report right now.\n\nReason: ${err?.message || 'Unknown error'
-        }\n\nTry again in a minute.`
+        `Can't generate report right now.\n\nReason: ${err?.message || 'Unknown error'}\n\nTry again in a moment.`
       );
     } finally {
       setIsGenerating(false);
@@ -159,7 +165,6 @@ const Reports: React.FC = () => {
 
   const handleCopy = () => {
     if (!reportText) return;
-
     navigator.clipboard.writeText(getReportForExport());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -167,29 +172,20 @@ const Reports: React.FC = () => {
 
   const handleDraftEmail = () => {
     if (!reportText) return;
-
     const subject = encodeURIComponent('Weekly Update');
     const body = encodeURIComponent(getReportForExport());
-
-    window.open(
-      `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`,
-      '_blank'
-    );
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, '_blank');
   };
 
   const handleNotionExport = async () => {
     if (!reportText) return;
-
     const formatted = getReportForExport();
     await navigator.clipboard.writeText(formatted);
-
     setNotionCopied(true);
     setTimeout(() => setNotionCopied(false), 2500);
-
     const notionPage =
       user?.notionReportsUrl ||
       'https://www.notion.so/shardulgupta/Week-14-3009c6509142809595c0c1e3eb4db083?source=copy_link';
-
     window.open(notionPage, '_blank');
   };
 
@@ -198,16 +194,65 @@ const Reports: React.FC = () => {
   const blockers = logs.filter((l) => l.status === Status.BLOCKED);
 
   const formattedReport = reportText ? formatReportText(reportText) : '';
+  const currentTemplate = REPORT_TEMPLATES[selectedTemplate];
 
   return (
     <div className="relative w-full flex flex-col gap-5">
       {/* TOP ACTION BAR */}
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2 sm:mb-6">
-        <p className="text-[18px] sm:text-[20px] font-semibold text-slate-900 tracking-tight">
-          Your reports, sir.
-        </p>
+        <div>
+          <p className="text-[18px] sm:text-[20px] font-semibold text-slate-900 tracking-tight">
+            Your reports, sir.
+          </p>
+          <p className="text-sm text-slate-400 mt-0.5">
+            Template: <span className="font-semibold text-slate-600">{currentTemplate.label}</span>
+          </p>
+        </div>
 
-        <div className="flex flex-wrap gap-2 sm:gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+
+          {/* Template Selector */}
+          <div className="relative" ref={templateMenuRef}>
+            <button
+              onClick={() => setShowTemplateMenu(v => !v)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap text-sm text-slate-700"
+            >
+              <FileText size={15} className="text-slate-500" />
+              <span>{currentTemplate.label}</span>
+              <ChevronDown size={14} className={`text-slate-400 transition-transform ${showTemplateMenu ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showTemplateMenu && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl border border-black/10 shadow-xl overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Output Format</p>
+                </div>
+                {(Object.entries(REPORT_TEMPLATES) as [ReportTemplateKey, typeof REPORT_TEMPLATES[ReportTemplateKey]][]).map(([key, tmpl]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setSelectedTemplate(key);
+                      setShowTemplateMenu(false);
+                      setReportText('');
+                    }}
+                    className={`w-full text-left px-4 py-3 transition-colors hover:bg-slate-50 ${selectedTemplate === key ? 'bg-amber-50' : ''}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className={`text-sm font-semibold ${selectedTemplate === key ? 'text-amber-700' : 'text-slate-800'}`}>
+                        {tmpl.label}
+                      </p>
+                      {selectedTemplate === key && (
+                        <div className="w-2 h-2 rounded-full bg-amber-400" />
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">{tmpl.description}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Generate */}
           <button
             onClick={handleGenerateAI}
             disabled={isGenerating || logs.length === 0}
@@ -221,13 +266,12 @@ const Reports: React.FC = () => {
             ) : (
               <>
                 <Sparkles size={16} style={{ color: accentColor }} />
-                <span className="text-slate-900 tracking-tight text-sm">
-                  Generate report
-                </span>
+                <span className="text-slate-900 tracking-tight text-sm">Generate report</span>
               </>
             )}
           </button>
 
+          {/* Copy */}
           <button
             onClick={handleCopy}
             disabled={!reportText}
@@ -246,6 +290,7 @@ const Reports: React.FC = () => {
             )}
           </button>
 
+          {/* Email */}
           <button
             onClick={handleDraftEmail}
             disabled={!reportText}
@@ -255,6 +300,7 @@ const Reports: React.FC = () => {
             <span className="text-sm">Email</span>
           </button>
 
+          {/* Notion */}
           <button
             onClick={handleNotionExport}
             disabled={!reportText}
@@ -268,24 +314,18 @@ const Reports: React.FC = () => {
 
       {/* MAIN GRID */}
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch" style={{ minHeight: '60vh' }}>
-        {/* LEFT */}
+        {/* LEFT — Raw breakdown */}
         <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col overflow-hidden" style={{ minHeight: '400px' }}>
           <div className="p-6 border-b border-black/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-white/70 border border-black/15 shadow-sm flex items-center justify-center">
                 <FileText size={18} className="text-slate-600" />
               </div>
-
               <div>
-                <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">
-                  Raw breakdown
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Last 7 days ({logs.length} logs)
-                </p>
+                <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">Raw breakdown</h3>
+                <p className="text-sm text-slate-500">Last 7 days ({logs.length} logs)</p>
               </div>
             </div>
-
             <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">
               <Clock size={14} />
               Weekly logs
@@ -297,31 +337,16 @@ const Reports: React.FC = () => {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <h4 className="font-semibold text-emerald-700 text-sm tracking-tight">
-                  Wins
-                </h4>
+                <h4 className="font-semibold text-emerald-700 text-sm tracking-tight">Wins ({wins.length})</h4>
               </div>
-
               <div className="space-y-3">
                 {wins.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm"
-                  >
-                    <p className="font-semibold text-slate-900 text-sm tracking-tight">
-                      {log.title}
-                    </p>
-                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">
-                      {log.impact}
-                    </p>
+                  <div key={log.id} className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm">
+                    <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
+                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
                 ))}
-
-                {wins.length === 0 && (
-                  <p className="text-slate-400 text-sm italic">
-                    No completed wins logged yet.
-                  </p>
-                )}
+                {wins.length === 0 && <p className="text-slate-400 text-sm italic">No completed wins logged yet.</p>}
               </div>
             </section>
 
@@ -329,31 +354,16 @@ const Reports: React.FC = () => {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-sky-500" />
-                <h4 className="font-semibold text-sky-700 text-sm tracking-tight">
-                  In progress
-                </h4>
+                <h4 className="font-semibold text-sky-700 text-sm tracking-tight">In progress ({ongoing.length})</h4>
               </div>
-
               <div className="space-y-3">
                 {ongoing.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm"
-                  >
-                    <p className="font-semibold text-slate-900 text-sm tracking-tight">
-                      {log.title}
-                    </p>
-                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">
-                      {log.impact}
-                    </p>
+                  <div key={log.id} className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm">
+                    <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
+                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
                 ))}
-
-                {ongoing.length === 0 && (
-                  <p className="text-slate-400 text-sm italic">
-                    No ongoing work logged.
-                  </p>
-                )}
+                {ongoing.length === 0 && <p className="text-slate-400 text-sm italic">No ongoing work logged.</p>}
               </div>
             </section>
 
@@ -361,37 +371,22 @@ const Reports: React.FC = () => {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <h4 className="font-semibold text-rose-700 text-sm tracking-tight">
-                  Blockers
-                </h4>
+                <h4 className="font-semibold text-rose-700 text-sm tracking-tight">Blockers ({blockers.length})</h4>
               </div>
-
               <div className="space-y-3">
                 {blockers.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm"
-                  >
-                    <p className="font-semibold text-slate-900 text-sm tracking-tight">
-                      {log.title}
-                    </p>
-                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">
-                      {log.impact}
-                    </p>
+                  <div key={log.id} className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm">
+                    <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
+                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
                 ))}
-
-                {blockers.length === 0 && (
-                  <p className="text-slate-400 text-sm italic">
-                    No blockers reported.
-                  </p>
-                )}
+                {blockers.length === 0 && <p className="text-slate-400 text-sm italic">No blockers reported.</p>}
               </div>
             </section>
           </div>
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT — Smart summary */}
         <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col relative overflow-hidden" style={{ minHeight: '400px' }}>
           <div
             className="absolute top-0 right-0 w-[800px] h-[950px] rounded-full blur-3xl opacity-25 pointer-events-none"
@@ -405,17 +400,11 @@ const Reports: React.FC = () => {
               <div className="w-11 h-11 rounded-2xl bg-white/70 border border-black/15 shadow-sm flex items-center justify-center">
                 <Sparkles size={18} style={{ color: accentColor }} />
               </div>
-
               <div>
-                <h3 className="font-semibold tracking-tight text-[15px] text-slate-900">
-                  Smart summary
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Generated by Gemini from your logs
-                </p>
+                <h3 className="font-semibold tracking-tight text-[15px] text-slate-900">Smart summary</h3>
+                <p className="text-sm text-slate-500">{currentTemplate.label} · Gemini</p>
               </div>
             </div>
-
             <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">
               <Clock size={14} />
               Last 7 days
@@ -431,10 +420,7 @@ const Reports: React.FC = () => {
 
                   if (isHeading(trimmed)) {
                     return (
-                      <div
-                        key={idx}
-                        className="text-slate-900 font-bold text-[16px] pt-4"
-                      >
+                      <div key={idx} className="text-slate-900 font-bold text-[16px] pt-4 first:pt-0">
                         {trimmed}
                       </div>
                     );
@@ -442,8 +428,8 @@ const Reports: React.FC = () => {
 
                   if (trimmed.startsWith('•')) {
                     return (
-                      <div key={idx} className="flex gap-3">
-                        <div className="text-slate-400 font-bold">•</div>
+                      <div key={idx} className="flex gap-3 pl-2">
+                        <div className="text-slate-300 font-bold mt-0.5">•</div>
                         <div>{trimmed.slice(1).trim()}</div>
                       </div>
                     );
@@ -453,13 +439,19 @@ const Reports: React.FC = () => {
                 })}
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center px-6">
-                <h4 className="font-semibold text-slate-900 text-lg tracking-tight">
-                  Ready when you are.
-                </h4>
+              <div className="h-full flex flex-col items-center justify-center text-center px-6 gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/70 border border-black/10 shadow-sm flex items-center justify-center">
+                  <Sparkles size={20} style={{ color: accentColor }} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-900 text-base tracking-tight">Ready when you are.</h4>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Select a format above and click Generate.
+                  </p>
+                </div>
 
                 {logs.length < 3 && (
-                  <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-amber-700 px-4 py-2 rounded-full bg-amber-50/80 border border-amber-100">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 px-4 py-2 rounded-full bg-amber-50/80 border border-amber-100">
                     <AlertTriangle size={14} />
                     Log at least 3 items for best results
                   </div>
@@ -470,10 +462,8 @@ const Reports: React.FC = () => {
 
           {reportText && (
             <div className="px-6 py-4 border-t border-black/10 text-xs text-slate-500 flex justify-between items-center relative z-10">
-              <span className="font-semibold">Generated with Gemini</span>
-              <span className="font-medium">
-                {new Date().toLocaleTimeString()}
-              </span>
+              <span className="font-semibold">Generated with Gemini · {currentTemplate.label}</span>
+              <span className="font-medium">{new Date().toLocaleTimeString()}</span>
             </div>
           )}
         </div>
