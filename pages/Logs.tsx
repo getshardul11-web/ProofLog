@@ -239,32 +239,32 @@ const Logs: React.FC = () => {
             </div>
 
             {/* Content Card */}
-            <div className="w-[calc(100%-5rem)] md:w-[calc(50%-3rem)] bg-white/70 backdrop-blur-2xl p-8 rounded-[34px] border border-black/30 shadow-sm hover:shadow-md transition-all">
+            <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-white/70 backdrop-blur-2xl p-5 sm:p-8 rounded-[24px] sm:rounded-[34px] border border-black/30 shadow-sm hover:shadow-md transition-all">
               {/* Top Row */}
-              <div className="flex items-start justify-between gap-6 mb-5">
+              <div className="flex items-start justify-between gap-3 mb-5">
                 <span
-                  className={`px-4 py-2 rounded-full text-[13px] font-semibold tracking-tight ${CATEGORY_COLORS[log.category] ||
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-semibold tracking-tight flex-shrink-0 ${CATEGORY_COLORS[log.category] ||
                     'bg-slate-50 text-slate-700 border border-black/30'
                     }`}
                 >
                   {log.category}
                 </span>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   {/* Timestamp */}
-                  <div className="text-sm font-semibold text-slate-400 flex items-center gap-4">
-                    <span className="flex items-center gap-2">
+                  <div className="text-xs sm:text-sm font-semibold text-slate-400 flex items-center gap-2 sm:gap-4">
+                    <span className="hidden sm:flex items-center gap-2">
                       <Calendar size={16} />
                       {formatDate(log.createdAt)}
                     </span>
-                    <span className="flex items-center gap-2">
-                      <Clock size={16} />
+                    <span className="flex items-center gap-1.5">
+                      <Clock size={14} />
                       {formatTime(log.createdAt)}
                     </span>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-3 ml-2 opacity-0 group-hover:opacity-100 transition-all">
+                  <div className="flex items-center gap-2 sm:gap-3 ml-1 sm:ml-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all">
                     <button
                       onClick={() => openEditModal(log)}
                       className="text-slate-300 hover:text-slate-700 transition-colors"
@@ -337,7 +337,7 @@ const Logs: React.FC = () => {
               )}
 
               {/* Reorder Controls */}
-              <div className="mt-6 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+              <div className="mt-6 flex justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all">
                 <button
                   onClick={() => moveLog(idx, 'up')}
                   disabled={idx === 0}

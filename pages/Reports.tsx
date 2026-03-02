@@ -200,29 +200,29 @@ const Reports: React.FC = () => {
   const formattedReport = reportText ? formatReportText(reportText) : '';
 
   return (
-    <div className="relative w-full h-[calc(100vh-150px)] flex flex-col gap-5 overflow-hidden">
+    <div className="relative w-full flex flex-col gap-5">
       {/* TOP ACTION BAR */}
-      <div className="relative z-10 flex items-center justify-between mb-6">
-        <p className="text-[20px] font-semibold text-slate-900 tracking-tight">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2 sm:mb-6">
+        <p className="text-[18px] sm:text-[20px] font-semibold text-slate-900 tracking-tight">
           Your reports, sir.
         </p>
 
-        <div className="w-full lg:w-[calc(50%-16px)] flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <button
             onClick={handleGenerateAI}
             disabled={isGenerating || logs.length === 0}
-            className="flex-[1.3] flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
           >
             {isGenerating ? (
               <>
                 <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
-                <span className="text-slate-700">Analyzing…</span>
+                <span className="text-slate-700 text-sm">Analyzing…</span>
               </>
             ) : (
               <>
-                <Sparkles size={18} style={{ color: accentColor }} />
-                <span className="text-slate-900 tracking-tight">
-                  Generate smart report
+                <Sparkles size={16} style={{ color: accentColor }} />
+                <span className="text-slate-900 tracking-tight text-sm">
+                  Generate report
                 </span>
               </>
             )}
@@ -231,17 +231,17 @@ const Reports: React.FC = () => {
           <button
             onClick={handleCopy}
             disabled={!reportText}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
           >
             {copied ? (
               <>
-                <Check size={18} className="text-emerald-600" />
-                Copied
+                <Check size={16} className="text-emerald-600" />
+                <span className="text-sm">Copied</span>
               </>
             ) : (
               <>
-                <Copy size={18} className="text-slate-500" />
-                Copy report
+                <Copy size={16} className="text-slate-500" />
+                <span className="text-sm">Copy</span>
               </>
             )}
           </button>
@@ -249,27 +249,27 @@ const Reports: React.FC = () => {
           <button
             onClick={handleDraftEmail}
             disabled={!reportText}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
           >
-            <Mail size={18} className="text-slate-500" />
-            Draft email
+            <Mail size={16} className="text-slate-500" />
+            <span className="text-sm">Email</span>
           </button>
 
           <button
             onClick={handleNotionExport}
             disabled={!reportText}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
           >
-            <NotepadText size={18} className="text-slate-500" />
-            {notionCopied ? 'Copied for Notion' : 'Notion export'}
+            <NotepadText size={16} className="text-slate-500" />
+            <span className="text-sm">{notionCopied ? 'Copied!' : 'Notion'}</span>
           </button>
         </div>
       </div>
 
       {/* MAIN GRID */}
-      <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-hidden items-stretch">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch" style={{ minHeight: '60vh' }}>
         {/* LEFT */}
-        <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col overflow-hidden">
+        <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col overflow-hidden" style={{ minHeight: '400px' }}>
           <div className="p-6 border-b border-black/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-white/70 border border-black/15 shadow-sm flex items-center justify-center">
@@ -292,7 +292,7 @@ const Reports: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          <div className="overflow-y-auto p-6 space-y-8 max-h-[60vh] lg:max-h-none lg:flex-1">
             {/* Wins */}
             <section>
               <div className="flex items-center gap-2 mb-4">
@@ -392,7 +392,7 @@ const Reports: React.FC = () => {
         </div>
 
         {/* RIGHT */}
-        <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col relative overflow-hidden">
+        <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col relative overflow-hidden" style={{ minHeight: '400px' }}>
           <div
             className="absolute top-0 right-0 w-[800px] h-[950px] rounded-full blur-3xl opacity-25 pointer-events-none"
             style={{
@@ -422,7 +422,7 @@ const Reports: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 relative z-10 overflow-y-auto p-6">
+          <div className="relative z-10 overflow-y-auto p-6 max-h-[60vh] lg:max-h-none lg:flex-1">
             {reportText ? (
               <div className="text-[15px] text-slate-700 leading-[24px] space-y-2">
                 {formattedReport.split('\n').map((line, idx) => {

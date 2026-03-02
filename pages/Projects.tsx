@@ -354,28 +354,28 @@ const Projects: React.FC = () => {
   return (
     <div className="relative w-full space-y-8">
       {/* TOP BAR */}
-      <div className="relative z-10 flex items-center justify-between mb-6">
-        <p className="text-[20px] font-semibold text-slate-900 tracking-tight">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <p className="text-[18px] sm:text-[20px] font-semibold text-slate-900 tracking-tight">
           Organize your work into projects
         </p>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <input
             value={newBoardName}
             onChange={(e) => setNewBoardName(e.target.value)}
-            placeholder="New board"
-            className="px-4 py-2 border rounded-xl text-sm outline-none focus:border-yellow-400"
+            placeholder="New board name"
+            className="flex-1 min-w-[130px] px-4 py-2 border rounded-xl text-sm outline-none focus:border-yellow-400"
           />
           <button
             onClick={addBoard}
-            className="px-4 py-2 rounded-xl border border-black/10 bg-white shadow-sm hover:shadow-md transition-all text-sm font-medium"
+            className="px-4 py-2 rounded-xl border border-black/10 bg-white shadow-sm hover:shadow-md transition-all text-sm font-medium whitespace-nowrap"
           >
             Add board
           </button>
 
           <button
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold border bg-white shadow-sm hover:shadow-md transition-all"
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl font-semibold border bg-white shadow-sm hover:shadow-md transition-all whitespace-nowrap"
           >
             <Plus size={18} style={{ color: accentColor }} />
             Add project
