@@ -181,40 +181,12 @@ const Logs: React.FC = () => {
     <div className="space-y-7 relative">
       {/* Background Pollen Particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[40px] right-[80px] w-[420px] h-[420px] rounded-full blur-3xl opacity-[0.14] bg-yellow-200" />
-        <div className="absolute top-[220px] left-[40px] w-[360px] h-[360px] rounded-full blur-3xl opacity-[0.12] bg-yellow-200" />
-        <div className="absolute top-[140px] left-[520px] w-[320px] h-[320px] rounded-full blur-3xl opacity-[0.10] bg-yellow-100" />
-        <div className="absolute bottom-[120px] right-[60px] w-[520px] h-[520px] rounded-full blur-3xl opacity-[0.12] bg-yellow-200" />
-        <div className="absolute bottom-[260px] left-[240px] w-[340px] h-[340px] rounded-full blur-3xl opacity-[0.09] bg-yellow-100" />
-        <div className="absolute bottom-[60px] right-[520px] w-[420px] h-[420px] rounded-full blur-3xl opacity-[0.08] bg-yellow-100" />
-
-        {/* pollen network lines */}
-        <svg
-          className="absolute top-0 left-0 w-full h-full opacity-[0.06]"
-          viewBox="0 0 1800 950"
-          fill="none"
-        >
-          <circle cx="200" cy="160" r="5" fill="#facc15" />
-          <circle cx="460" cy="280" r="5" fill="#facc15" />
-          <circle cx="720" cy="200" r="5" fill="#facc15" />
-          <circle cx="1040" cy="260" r="5" fill="#facc15" />
-          <circle cx="1440" cy="220" r="5" fill="#facc15" />
-          <circle cx="1320" cy="620" r="5" fill="#facc15" />
-          <circle cx="900" cy="760" r="5" fill="#facc15" />
-          <circle cx="520" cy="720" r="5" fill="#facc15" />
-
-          <path
-            d="M200 160 L460 280 L720 200 L1040 260 L1440 220"
-            stroke="#facc15"
-            strokeWidth="2"
-          />
-          <path
-            d="M720 200 L1320 620 L900 760 L520 720 L200 160"
-            stroke="#facc15"
-            strokeWidth="2"
-          />
-          <path d="M1040 260 L900 760" stroke="#facc15" strokeWidth="2" />
-        </svg>
+        <div className="absolute top-[40px] right-[80px] w-[420px] h-[420px] rounded-full blur-3xl opacity-[0.14] " />
+        <div className="absolute top-[220px] left-[40px] w-[360px] h-[360px] rounded-full blur-3xl opacity-[0.12] " />
+        <div className="absolute top-[140px] left-[520px] w-[320px] h-[320px] rounded-full blur-3xl opacity-[0.10] " />
+        <div className="absolute bottom-[120px] right-[60px] w-[520px] h-[520px] rounded-full blur-3xl opacity-[0.12] " />
+        <div className="absolute bottom-[260px] left-[240px] w-[340px] h-[340px] rounded-full blur-3xl opacity-[0.09] " />
+        <div className="absolute bottom-[60px] right-[520px] w-[420px] h-[420px] rounded-full blur-3xl opacity-[0.08] " />
       </div>
 
       {/* Search + Filter */}
