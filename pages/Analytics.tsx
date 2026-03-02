@@ -272,13 +272,7 @@ const Analytics: React.FC = () => {
         {/* Trend Area */}
         <div className="lg:col-span-2 bg-white/60 backdrop-blur-2xl p-7 rounded-3xl border border-slate-200/70 shadow-sm relative overflow-hidden">
           {/* Warm orb glow */}
-          <div
-            className="absolute -top-28 -right-28 w-[420px] h-[420px] rounded-full blur-3xl opacity-50"
-            style={{
-              background:
-                'radial-gradient(circle at center, rgba(255,165,0,0.85) 0%, rgba(255,220,120,0.55) 40%, rgba(255,255,255,0) 70%)',
-            }}
-          />
+          
 
           <div className="relative z-10">
             <h3 className="text-[16px] font-semibold tracking-tight text-slate-900 mb-2">
