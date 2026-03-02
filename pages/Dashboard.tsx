@@ -34,10 +34,10 @@ const StatCard = ({
   iconBg: string;
   accentColor: string;
 }) => (
-  <div className="bg-white px-6 py-5 rounded-[22px] border border-black/15 shadow-sm h-[92px] flex items-center gap-5">
-    {/* BIG ICON BLOCK */}
+  <div className="bg-white px-3 sm:px-6 py-3 sm:py-5 rounded-[22px] border border-black/15 shadow-sm flex items-center gap-3 sm:gap-5">
+    {/* ICON BLOCK */}
     <div
-      className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center shadow-sm"
+      className="w-10 h-10 sm:w-[52px] sm:h-[52px] rounded-2xl flex items-center justify-center shadow-sm flex-shrink-0 [&>svg]:w-[18px] [&>svg]:h-[18px] sm:[&>svg]:w-[22px] sm:[&>svg]:h-[22px]"
       style={{
         background: iconBg,
         border: `1.5px solid ${accentColor}`,
@@ -47,16 +47,16 @@ const StatCard = ({
     </div>
 
     {/* CONTENT */}
-    <div className="flex flex-col justify-center leading-tight">
-      <p className="text-[12px] font-bold text-slate-900">{label}</p>
+    <div className="flex flex-col justify-center leading-tight min-w-0">
+      <p className="text-[11px] sm:text-[12px] font-bold text-slate-900 truncate">{label}</p>
 
-      <div className="mt-1 flex items-baseline gap-2">
-        <h3 className="text-[22px] font-semibold tracking-tight text-slate-600">
+      <div className="mt-0.5 sm:mt-1 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+        <h3 className="text-[17px] sm:text-[22px] font-semibold tracking-tight text-slate-600">
           {value}
         </h3>
 
         {subValue && (
-          <span className="text-xs text-slate-400 font-medium">{subValue}</span>
+          <span className="text-[10px] sm:text-xs text-slate-400 font-medium">{subValue}</span>
         )}
       </div>
     </div>
@@ -255,7 +255,7 @@ const Dashboard: React.FC = () => {
       <div className="flex items-start justify-between gap-10">
         <div>
           <h1
-            className="text-[38px] font-semibold tracking-tight"
+            className="text-[26px] sm:text-[32px] md:text-[38px] font-semibold tracking-tight"
             style={{ color: accentColor }}
           >
             Welcome to Pollen.
@@ -267,7 +267,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* TOP STATS */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-5">
+      <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5 mb-5">
   <StatCard
     label="Today"
     value={`${totalHoursToday}h ${totalMinsToday}m`}
@@ -507,22 +507,22 @@ const Dashboard: React.FC = () => {
             {recentLogs.map((log) => (
               <div
                 key={log.id}
-                className="py-4 flex items-start justify-between gap-6"
+                className="py-4 flex items-start justify-between gap-3"
               >
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-semibold text-slate-900">
+                <div className="flex flex-col gap-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 truncate">
                     {log.title}
                   </p>
                   <p className="text-xs text-slate-500">{log.category}</p>
                 </div>
 
-                <div className="flex items-center gap-6 text-xs text-slate-500 font-semibold">
-                  <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-slate-400" />
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-6 text-xs text-slate-500 font-semibold flex-shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={13} className="text-slate-400" />
                     {log.timeSpent}m
                   </div>
 
-                  <div>
+                  <div className="hidden sm:block">
                     {new Date(log.createdAt).toLocaleDateString('en-US')}
                   </div>
                 </div>
