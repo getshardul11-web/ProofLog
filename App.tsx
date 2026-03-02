@@ -1,40 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import LogForm from './components/LogForm';
-import Dashboard from './pages/Dashboard';
-import Logs from './pages/Logs';
-import Projects from './pages/Projects';
-import Reports from './pages/Reports';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
 import Login from './pages/Login';
-import { db } from './services/storage';
 import { supabase } from './services/supabase';
+
+// ⚡ helper to allow preloading of lazy routes
+function lazyWithPreload(factory: any) {
+  const Component: any = lazy(factory);
+  Component.preload = factory;
+  return Component;
+}
+
+// 🚀 Lazy-loaded pages with preload capability (for hover prefetch)
+const Dashboard = lazyWithPreload(() => import('./pages/Dashboard'));
+const Logs = lazyWithPreload(() => import('./pages/Logs'));
+const Projects = lazyWithPreload(() => import('./pages/Projects'));
+const Reports = lazyWithPreload(() => import('./pages/Reports'));
+const Analytics = lazyWithPreload(() => import('./pages/Analytics'));
+const Settings = lazyWithPreload(() => import('./pages/Settings'));
 
 const App: React.FC = () => {
   const [showLogModal, setShowLogModal] = useState(false);
   const [logsUpdated, setLogsUpdated] = useState(0);
-  const [projects, setProjects] = useState<any[]>([]);
 
   // 🔐 Auth state
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const refreshProjects = async () => {
-    const p = await db.getProjects();
-    setProjects(p || []);
-  };
-
   const handleLogSaved = () => {
     setLogsUpdated((prev) => prev + 1);
-    refreshProjects();
     setShowLogModal(false);
   };
-
-  useEffect(() => {
-    refreshProjects();
-  }, [showLogModal]);
 
   // ⌨️ Keyboard shortcut
   useEffect(() => {
@@ -63,7 +60,17 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // 🔐 Supabase auth listener (HARDENED)
+  // 🚀 warm critical routes after first paint
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Dashboard.preload?.();
+      Logs.preload?.();
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 🔐 Supabase auth listener (NON-BLOCKING)
   useEffect(() => {
     let mounted = true;
 
@@ -71,7 +78,6 @@ const App: React.FC = () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!mounted) return;
-
         setSession(data.session ?? null);
       } catch (err) {
         console.error('Auth init error:', err);
@@ -95,40 +101,39 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // 🟡 Proper loading screen (IMPORTANT — no blank screen)
-  if (authLoading) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center bg-white">
-        <div className="text-slate-600 font-semibold">Loading…</div>
-      </div>
-    );
-  }
-
-  // 🔐 Not logged in
-  if (!session) {
+  // ✅ Gate login only after auth resolved
+  if (!authLoading && !session) {
     return <Login />;
   }
 
-  // ✅ Logged in app
+  // 🚀 Always render app shell fast
   return (
     <Router>
       <Layout onOpenLogModal={() => setShowLogModal(true)}>
-        <Routes>
-          <Route path="/" element={<Dashboard key={logsUpdated} />} />
-          <Route path="/logs" element={<Logs key={logsUpdated} />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/analytics" element={<Analytics key={logsUpdated} />} />
-          <Route path="/reports" element={<Reports key={logsUpdated} />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense
+          fallback={
+            <div className="w-full h-[60vh] flex items-center justify-center text-slate-500 font-semibold">
+              Loading…
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Dashboard key={logsUpdated} />} />
+            <Route path="/logs" element={<Logs key={logsUpdated} />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/analytics" element={<Analytics key={logsUpdated} />} />
+            <Route path="/reports" element={<Reports key={logsUpdated} />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </Layout>
 
       {showLogModal && (
         <LogForm
           onClose={() => setShowLogModal(false)}
           onSaved={handleLogSaved}
-          projects={projects}
+          projects={[]}
         />
       )}
     </Router>

@@ -5,7 +5,8 @@ export enum Category {
   MEETINGS = 'Meetings',
   RESEARCH = 'Research',
   OPS = 'Ops',
-  ADMIN = 'Admin'
+  ADMIN = 'Admin',
+  VIBE_CODING = 'Vibe Coding'
 }
 
 export enum Status {

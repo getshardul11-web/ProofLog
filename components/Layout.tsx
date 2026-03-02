@@ -1,6 +1,6 @@
 import { supabase } from "../services/supabase";
 import React, { useEffect, useState } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { NAV_ITEMS } from "../constants";
 import { ACCENT_COLORS } from "../types";
 import {
@@ -15,6 +15,7 @@ import {
   Clock,
   LogOut,
 } from "lucide-react";
+import Logo from "../components/Logo";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,17 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // 🚀 route preloader for instant navigation
+  const preloadRoute = (path: string) => {
+    if (path === "/") import("../pages/Dashboard");
+    if (path === "/logs") import("../pages/Logs");
+    if (path === "/projects") import("../pages/Projects");
+    if (path === "/analytics") import("../pages/Analytics");
+    if (path === "/reports") import("../pages/Reports");
+    if (path === "/settings") import("../pages/Settings");
+  };
 
   const [user, setUser] = useState<any>(null);
 
@@ -99,10 +111,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
           {/* SIDEBAR — desktop only */}
           <aside className="hidden md:flex w-[90px] flex-col items-center py-8 border-r border-black/20 bg-white">
             <div className="w-12 h-12 rounded-2xl bg-white border border-black/20 shadow-sm flex items-center justify-center">
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{ background: accentColor }}
-              />
+              <Logo size={20} />
             </div>
 
             <div className="mt-14 flex flex-col gap-5 w-full items-center">
@@ -118,6 +127,11 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
                   <Link
                     key={item.id}
                     to={item.path}
+                    onMouseEnter={() => preloadRoute(item.path)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(item.path);
+                    }}
                     className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${isActive
                         ? "bg-slate-900 text-white shadow-md"
                         : "bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-black/20"
@@ -223,6 +237,11 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
             <Link
               key={item.id}
               to={item.path}
+              onMouseEnter={() => preloadRoute(item.path)}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(item.path);
+              }}
               className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-150 ${
                 isActive ? "text-slate-900" : "text-slate-400"
               }`}
