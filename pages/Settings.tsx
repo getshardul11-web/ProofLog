@@ -170,7 +170,6 @@ const Settings: React.FC = () => {
           <div className="flex items-center gap-3 mb-6">
             <div
               className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-lg"
-              style={{ background: `radial-gradient(circle at 30% 30%, ${accentColor} 0%, rgba(255,255,255,0.9) 70%)` }}
             >
               {user.name?.charAt(0)?.toUpperCase() || '?'}
             </div>

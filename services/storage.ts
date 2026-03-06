@@ -95,9 +95,16 @@ export const db = {
   // LOGS
   // =========================
   async getLogs(): Promise<WorkLog[]> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
     const { data, error } = await supabase
       .from('logs')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -130,16 +137,23 @@ export const db = {
   },
 
   async updateLog(id: string, updates: Partial<WorkLog>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     const { error } = await supabase
       .from('logs')
       .update(updates)
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
 
     if (error) console.error('updateLog error', error);
   },
 
   async deleteLog(id: string) {
-    const { error } = await supabase.from('logs').delete().eq('id', id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from('logs').delete().eq('id', id).eq('user_id', user.id);
 
     if (error) console.error('deleteLog error', error);
   },
