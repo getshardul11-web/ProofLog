@@ -83,10 +83,17 @@ export const db = {
   },
 
   async deleteProject(projectId: string) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
     const { error } = await supabase
       .from('projects')
       .delete()
-      .eq('id', projectId);
+      .eq('id', projectId)
+      .eq('user_id', user.id);
 
     if (error) console.error('deleteProject error', error);
   },
@@ -131,7 +138,26 @@ export const db = {
   },
 
   async saveLog(log: WorkLog) {
-    const { error } = await supabase.from('logs').insert(log);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { error } = await supabase.from('logs').insert({
+      id: log.id,
+      user_id: user.id,
+      title: log.title,
+      impact: log.impact,
+      category: log.category,
+      status: log.status,
+      time_spent: log.timeSpent,
+      tags: log.tags,
+      links: log.links,
+      project_id: log.projectId || null,
+      proof_url: log.proofUrl,
+      created_at: new Date(log.createdAt).toISOString(),
+    });
 
     if (error) console.error('saveLog error', error);
   },

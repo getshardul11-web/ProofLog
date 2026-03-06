@@ -337,7 +337,10 @@ const Projects: React.FC = () => {
     if (!window.confirm('Delete this project?')) return;
     if (!supabase) return;
 
-    const { error } = await supabase.from('projects').delete().eq('id', id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from('projects').delete().eq('id', id).eq('user_id', user.id);
 
     if (error) {
       alert('Failed to delete project: ' + error.message);
