@@ -101,6 +101,54 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // 🔔 Reminder notification engine
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    if (!('Notification' in window)) return;
+
+    const userId = session.user.id;
+
+    const checkReminder = () => {
+      if (Notification.permission !== 'granted') return;
+
+      const raw = localStorage.getItem(`pollen-reminder-${userId}`);
+      if (!raw) return;
+
+      try {
+        const config = JSON.parse(raw);
+        if (!config.enabled) return;
+
+        const now = new Date();
+        const currentDay  = now.getDay();   // 0=Sun … 6=Sat
+        const currentHour = now.getHours();
+
+        if (!Array.isArray(config.days) || !config.days.includes(currentDay)) return;
+        if (currentHour < config.startHour || currentHour >= config.endHour) return;
+
+        const intervalMs = (config.intervalMinutes || 120) * 60 * 1000;
+        const lastFired  = config.lastFired || 0;
+
+        if (Date.now() - lastFired < intervalMs) return;
+
+        // Fire notification
+        new Notification('Time to log your work! 🌸', {
+          body: 'Keep your streak going — what did you just finish?',
+          icon: '/favicon.svg',
+        });
+
+        config.lastFired = Date.now();
+        localStorage.setItem(`pollen-reminder-${userId}`, JSON.stringify(config));
+      } catch {
+        // malformed config — ignore
+      }
+    };
+
+    // Check immediately, then every minute
+    checkReminder();
+    const ticker = setInterval(checkReminder, 60_000);
+    return () => clearInterval(ticker);
+  }, [session]);
+
   // ✅ Gate login only after auth resolved
   if (!authLoading && !session) {
     return <Login />;

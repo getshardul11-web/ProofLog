@@ -404,32 +404,68 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Daily Focus */}
-        <div className="lg:col-span-3 bg-white rounded-[26px] border border-black/15 shadow-sm p-6">
-          <h2 className="text-[16px] font-semibold text-slate-900">
-            Daily focus
-          </h2>
-
-          <div className="mt-6 space-y-4 text-sm">
-            <div className="flex items-center justify-between">
-              <p className="text-slate-500 font-medium">Time logged</p>
-              <p className="font-semibold text-slate-900">
-                {totalHoursToday}h {totalMinsToday}m
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <p className="text-slate-500 font-medium">Logs captured</p>
-              <p className="font-semibold text-slate-900">{todayLogs.length}</p>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <p className="text-slate-500 font-medium">Top category</p>
-              <p className="font-semibold text-slate-900">{topCategory}</p>
-            </div>
+        <div className="lg:col-span-3 bg-white rounded-[26px] border border-black/15 shadow-sm p-6 flex flex-col">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[16px] font-semibold text-slate-900">Daily focus</h2>
+            <span className="text-[11px] font-semibold text-slate-400">
+              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
           </div>
 
-          <div className="mt-8 text-xs font-semibold text-slate-400">
-            Keep compounding.
+          {/* Circular Progress Ring */}
+          <div className="flex-1 flex items-center justify-center py-4">
+            {(() => {
+              const GOAL = 240; // 4h daily goal in minutes
+              const pct = Math.min(1, totalTimeToday / GOAL);
+              const R = 46;
+              const circ = 2 * Math.PI * R;
+              const progressDash = circ * pct;
+              const progressGap = circ - progressDash;
+              return (
+                <svg width="128" height="128" viewBox="0 0 120 120">
+                  {/* Track ring */}
+                  <circle cx="60" cy="60" r={R} fill="none" stroke="#f1f5f9" strokeWidth="10"/>
+                  {/* Progress ring */}
+                  {pct > 0 && (
+                    <circle
+                      cx="60" cy="60" r={R}
+                      fill="none"
+                      stroke={accentColor}
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray={`${progressDash} ${progressGap}`}
+                      transform="rotate(-90 60 60)"
+                    />
+                  )}
+                  {/* Center: time */}
+                  <text x="60" y="53" textAnchor="middle" fontSize="17" fontWeight="700" fill="#1e293b" fontFamily="Inter, sans-serif">
+                    {totalHoursToday}h {totalMinsToday}m
+                  </text>
+                  <text x="60" y="69" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="Inter, sans-serif">
+                    of 4h goal
+                  </text>
+                </svg>
+              );
+            })()}
+          </div>
+
+          {/* Stat Pills */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 rounded-2xl">
+              <span className="text-xs font-semibold text-slate-500">Logs today</span>
+              <span className="text-sm font-bold text-slate-900">{todayLogs.length}</span>
+            </div>
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 rounded-2xl">
+              <span className="text-xs font-semibold text-slate-500">Top category</span>
+              <span className="text-xs font-bold text-slate-700 truncate ml-2 max-w-[90px] text-right">{topCategory}</span>
+            </div>
+            <div
+              className="flex items-center justify-between px-4 py-2.5 rounded-2xl border border-amber-100"
+              style={{ background: 'rgba(244,196,48,0.08)' }}
+            >
+              <span className="text-xs font-semibold text-amber-600">🔥 Streak</span>
+              <span className="text-sm font-bold text-amber-600">{streakDays}d</span>
+            </div>
           </div>
         </div>
 
