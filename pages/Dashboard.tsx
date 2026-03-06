@@ -422,29 +422,33 @@ const Dashboard: React.FC = () => {
               const progressDash = circ * pct;
               const progressGap = circ - progressDash;
               return (
-                <svg width="128" height="128" viewBox="0 0 120 120">
-                  {/* Track ring */}
-                  <circle cx="60" cy="60" r={R} fill="none" stroke="#f1f5f9" strokeWidth="10"/>
-                  {/* Progress ring */}
-                  {pct > 0 && (
-                    <circle
-                      cx="60" cy="60" r={R}
-                      fill="none"
-                      stroke={accentColor}
-                      strokeWidth="10"
-                      strokeLinecap="round"
-                      strokeDasharray={`${progressDash} ${progressGap}`}
-                      transform="rotate(-90 60 60)"
-                    />
-                  )}
-                  {/* Center: time */}
-                  <text x="60" y="53" textAnchor="middle" fontSize="17" fontWeight="700" fill="#1e293b" fontFamily="Inter, sans-serif">
-                    {totalHoursToday}h {totalMinsToday}m
-                  </text>
-                  <text x="60" y="69" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="Inter, sans-serif">
-                    of 4h goal
-                  </text>
-                </svg>
+                <div className="relative" style={{ width: 128, height: 128 }}>
+                  <svg width="128" height="128" viewBox="0 0 120 120">
+                    {/* Track ring */}
+                    <circle cx="60" cy="60" r={R} fill="none" stroke="#f1f5f9" strokeWidth="10"/>
+                    {/* Progress ring */}
+                    {pct > 0 && (
+                      <circle
+                        cx="60" cy="60" r={R}
+                        fill="none"
+                        stroke={accentColor}
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                        strokeDasharray={`${progressDash} ${progressGap}`}
+                        transform="rotate(-90 60 60)"
+                      />
+                    )}
+                  </svg>
+                  {/* Center label — HTML for reliable centering */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[16px] font-bold text-slate-800 leading-none">
+                      {totalHoursToday}h {totalMinsToday}m
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400 mt-1">
+                      of 4h goal
+                    </span>
+                  </div>
+                </div>
               );
             })()}
           </div>

@@ -199,7 +199,7 @@ const Reports: React.FC = () => {
   return (
     <div className="relative w-full flex flex-col gap-5">
       {/* TOP ACTION BAR */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2 sm:mb-6">
+      <div className="relative z-[20] flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2 sm:mb-6">
         <div>
           <p className="text-[18px] sm:text-[20px] font-semibold text-slate-900 tracking-tight">
             Your reports, sir.
@@ -313,9 +313,9 @@ const Reports: React.FC = () => {
       </div>
 
       {/* MAIN GRID */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch" style={{ minHeight: '60vh' }}>
+      <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch" style={{ minHeight: '60vh' }}>
         {/* LEFT — Raw breakdown */}
-        <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col overflow-hidden" style={{ minHeight: '400px' }}>
+        <div className="bg-white rounded-[26px] border border-black/10 shadow-sm flex flex-col overflow-hidden" style={{ minHeight: '400px' }}>
           <div className="p-6 border-b border-black/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-white/70 border border-black/15 shadow-sm flex items-center justify-center">
@@ -341,7 +341,7 @@ const Reports: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {wins.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm">
+                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-black/8 shadow-sm">
                     <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
                     <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
@@ -358,7 +358,7 @@ const Reports: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {ongoing.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm">
+                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-black/8 shadow-sm">
                     <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
                     <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
@@ -375,7 +375,7 @@ const Reports: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {blockers.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-white/70 border border-black/10 shadow-sm">
+                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-black/8 shadow-sm">
                     <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
                     <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
@@ -387,15 +387,8 @@ const Reports: React.FC = () => {
         </div>
 
         {/* RIGHT — Smart summary */}
-        <div className="bg-white/60 backdrop-blur-2xl rounded-[32px] border border-black/15 shadow-sm flex flex-col relative overflow-hidden" style={{ minHeight: '400px' }}>
-          <div
-            className="absolute top-0 right-0 w-[800px] h-[950px] rounded-full blur-3xl opacity-25 pointer-events-none"
-            style={{
-              background: `radial-gradient(circle at center, ${accentColor} 0%, rgba(255,255,255,0) 70%)`,
-            }}
-          />
-
-          <div className="p-6 border-b border-black/10 flex items-center justify-between relative z-10">
+        <div className="bg-white rounded-[26px] border border-black/10 shadow-sm flex flex-col relative overflow-hidden" style={{ minHeight: '400px' }}>
+          <div className="p-6 border-b border-black/10 flex items-center justify-between">
             <div className="flex items-start gap-3">
               <div className="w-11 h-11 rounded-2xl bg-white/70 border border-black/15 shadow-sm flex items-center justify-center">
                 <Sparkles size={18} style={{ color: accentColor }} />
@@ -411,7 +404,7 @@ const Reports: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative z-10 overflow-y-auto p-6 max-h-[60vh] lg:max-h-none lg:flex-1">
+          <div className="overflow-y-auto p-6 max-h-[60vh] lg:max-h-none lg:flex-1">
             {reportText ? (
               <div className="text-[15px] text-slate-700 leading-[24px] space-y-2">
                 {formattedReport.split('\n').map((line, idx) => {
@@ -461,7 +454,7 @@ const Reports: React.FC = () => {
           </div>
 
           {reportText && (
-            <div className="px-6 py-4 border-t border-black/10 text-xs text-slate-500 flex justify-between items-center relative z-10">
+            <div className="px-6 py-4 border-t border-black/10 text-xs text-slate-500 flex justify-between items-center">
               <span className="font-semibold">Generated with Gemini · {currentTemplate.label}</span>
               <span className="font-medium">{new Date().toLocaleTimeString()}</span>
             </div>
