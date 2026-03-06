@@ -331,44 +331,46 @@ const Dashboard: React.FC = () => {
             </Link>
           </div>
 
-          <div className="mt-6 space-y-4">
-            {projects.slice(0, 4).map((project) => {
+          <div className="mt-4 space-y-2">
+            {projects.slice(0, 5).map((project) => {
               const projectLogs = logs.filter((l) => l.projectId === project.id);
-              const projectTime = projectLogs.reduce(
-                (acc, l) => acc + l.timeSpent,
-                0
-              );
+              const projectTime = projectLogs.reduce((acc, l) => acc + l.timeSpent, 0);
+              const hrs = Math.floor(projectTime / 60);
+              const mins = projectTime % 60;
+              const hasActivity = projectTime > 0;
 
               return (
-                <div key={project.id}>
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: project.color }}
-                      />
-                      <span className="font-semibold text-slate-800 text-sm">
-                        {project.name}
+                <div key={project.id} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-50 transition-colors">
+                  <div
+                    className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center"
+                    style={{ backgroundColor: `${project.color}18`, border: `1.5px solid ${project.color}40` }}
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: project.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-slate-800 text-sm truncate">{project.name}</span>
+                      <span className="text-xs font-semibold text-slate-400 ml-2 shrink-0">
+                        {hasActivity ? `${hrs}h${mins > 0 ? ` ${mins}m` : ''}` : '—'}
                       </span>
                     </div>
-
-                    <span className="text-xs font-semibold text-slate-400">
-                      {Math.round(projectTime / 60)}h
-                    </span>
-                  </div>
-
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-black/10">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${Math.min(100, (projectTime / 600) * 100)}%`,
-                        backgroundColor: project.color,
-                      }}
-                    />
+                    <div className="mt-1.5 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: hasActivity ? `${Math.min(100, (projectTime / 600) * 100)}%` : '0%',
+                          backgroundColor: project.color,
+                        }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{projectLogs.length} log{projectLogs.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
               );
             })}
+            {projects.length === 0 && (
+              <p className="text-sm text-slate-400 text-center py-8">No projects yet.</p>
+            )}
           </div>
         </div>
 
@@ -389,7 +391,7 @@ const Dashboard: React.FC = () => {
                   dataKey="label"
                   tick={{ fontSize: 12, fill: '#64748b' }}
                 />
-                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => `${Math.round(v / 60)}h`} />
                 <Tooltip />
                 <Line
                   type="monotone"
