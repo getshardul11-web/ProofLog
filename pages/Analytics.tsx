@@ -18,20 +18,20 @@ import {
 } from 'recharts';
 
 const StatCard = ({ icon: Icon, label, value, sub, accentColor }: any) => (
-  <div className="bg-white/60 backdrop-blur-2xl p-6 rounded-3xl border border-slate-200/70 shadow-sm hover:shadow-md transition-all">
+  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
     <div className="flex items-center gap-4">
-      <div className="w-12 h-12 rounded-2xl bg-white/70 border border-slate-200/70 shadow-sm flex items-center justify-center">
-        <Icon size={20} style={{ color: accentColor }} />
+      <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+        <Icon size={19} className="text-slate-600" />
       </div>
       <div>
-        <p className="text-[12px] font-semibold text-slate-500 tracking-tight">
+        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
           {label}
         </p>
-        <p className="text-[20px] font-semibold tracking-tight text-slate-900 mt-1">
+        <p className="text-[19px] font-semibold tracking-tight text-slate-900 mt-0.5">
           {value}
         </p>
         {sub && (
-          <p className="text-xs text-slate-400 font-medium mt-1">{sub}</p>
+          <p className="text-xs text-slate-400 font-medium mt-0.5">{sub}</p>
         )}
       </div>
     </div>
@@ -159,7 +159,7 @@ const Analytics: React.FC = () => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Category Pie */}
-        <div className="bg-white/60 backdrop-blur-2xl p-7 rounded-3xl border border-slate-200/70 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h3 className="text-[16px] font-semibold tracking-tight text-slate-900 mb-2">
             Time by category
           </h3>
@@ -186,11 +186,10 @@ const Analytics: React.FC = () => {
 
                 <Tooltip
                   contentStyle={{
-                    borderRadius: '16px',
-                    border: '1px solid rgba(226,232,240,0.8)',
-                    backgroundColor: 'rgba(255,255,255,0.85)',
-                    backdropFilter: 'blur(12px)',
-                    boxShadow: '0 10px 30px rgba(15,23,42,0.12)',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#fff',
+                    boxShadow: '0 4px 12px rgba(15,23,42,0.08)',
                     fontSize: '12px',
                     fontWeight: 600,
                     color: '#0f172a',
@@ -216,7 +215,7 @@ const Analytics: React.FC = () => {
         </div>
 
         {/* Daily Logging */}
-        <div className="bg-white/60 backdrop-blur-2xl p-7 rounded-3xl border border-slate-200/70 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h3 className="text-[16px] font-semibold tracking-tight text-slate-900 mb-2">
             Daily logging activity
           </h3>
@@ -247,11 +246,10 @@ const Analytics: React.FC = () => {
                 <Tooltip
                   cursor={{ fill: 'rgba(248,250,252,0.8)' }}
                   contentStyle={{
-                    borderRadius: '16px',
-                    border: '1px solid rgba(226,232,240,0.8)',
-                    backgroundColor: 'rgba(255,255,255,0.85)',
-                    backdropFilter: 'blur(12px)',
-                    boxShadow: '0 10px 30px rgba(15,23,42,0.12)',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#fff',
+                    boxShadow: '0 4px 12px rgba(15,23,42,0.08)',
                     fontSize: '12px',
                     fontWeight: 600,
                     color: '#0f172a',
@@ -270,11 +268,8 @@ const Analytics: React.FC = () => {
         </div>
 
         {/* Trend Area */}
-        <div className="lg:col-span-2 bg-white/60 backdrop-blur-2xl p-7 rounded-3xl border border-slate-200/70 shadow-sm relative overflow-hidden">
-          {/* Warm orb glow */}
-          
-
-          <div className="relative z-10">
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
             <h3 className="text-[16px] font-semibold tracking-tight text-slate-900 mb-2">
               Effort trend
             </h3>

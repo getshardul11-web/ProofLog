@@ -34,24 +34,18 @@ const StatCard = ({
   iconBg: string;
   accentColor: string;
 }) => (
-  <div className="bg-white px-3 sm:px-6 py-3 sm:py-5 rounded-[22px] border border-black/15 shadow-sm flex items-center gap-3 sm:gap-5">
+  <div className="bg-white px-3 sm:px-5 py-3 sm:py-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3 sm:gap-4">
     {/* ICON BLOCK */}
-    <div
-      className="w-10 h-10 sm:w-[52px] sm:h-[52px] rounded-2xl flex items-center justify-center shadow-sm flex-shrink-0 [&>svg]:w-[18px] [&>svg]:h-[18px] sm:[&>svg]:w-[22px] sm:[&>svg]:h-[22px]"
-      style={{
-        background: iconBg,
-        border: `1.5px solid ${accentColor}`,
-      }}
-    >
+    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-50 border border-slate-200 [&>svg]:w-[16px] [&>svg]:h-[16px] sm:[&>svg]:w-[19px] sm:[&>svg]:h-[19px]">
       {icon}
     </div>
 
     {/* CONTENT */}
     <div className="flex flex-col justify-center leading-tight min-w-0">
-      <p className="text-[11px] sm:text-[12px] font-bold text-slate-900 truncate">{label}</p>
+      <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 truncate">{label}</p>
 
       <div className="mt-0.5 sm:mt-1 flex items-baseline gap-1 sm:gap-2 flex-wrap">
-        <h3 className="text-[17px] sm:text-[22px] font-semibold tracking-tight text-slate-600">
+        <h3 className="text-[17px] sm:text-[21px] font-semibold tracking-tight text-slate-900">
           {value}
         </h3>
 
@@ -272,7 +266,7 @@ const Dashboard: React.FC = () => {
     label="Today"
     value={`${totalHoursToday}h ${totalMinsToday}m`}
     subValue={`${todayLogs.length} logs`}
-    icon={<Timer size={22} className="text-black" />}
+    icon={<Timer size={22} className="text-slate-600" />}
     iconBg="white"
     accentColor={accentColor}
   />
@@ -281,7 +275,7 @@ const Dashboard: React.FC = () => {
     label="This week"
     value={`${totalHoursWeek}h ${totalMinsWeek}m`}
     subValue={`${weekLogs.length} logs`}
-    icon={<CalendarDays size={22} className="text-black" />}
+    icon={<CalendarDays size={22} className="text-slate-600" />}
     iconBg="white"
     accentColor={accentColor}
   />
@@ -290,7 +284,7 @@ const Dashboard: React.FC = () => {
     label="Completed"
     value={completedLogs}
     subValue="all time"
-    icon={<CheckCircle2 size={22} className="text-black" />}
+    icon={<CheckCircle2 size={22} className="text-slate-600" />}
     iconBg="white"
     accentColor={accentColor}
   />
@@ -299,7 +293,7 @@ const Dashboard: React.FC = () => {
     label="Projects"
     value={projects.length}
     subValue="active"
-    icon={<FolderKanban size={22} className="text-black" />}
+    icon={<FolderKanban size={22} className="text-slate-600" />}
     iconBg="white"
     accentColor={accentColor}
   />
@@ -308,7 +302,7 @@ const Dashboard: React.FC = () => {
     label="Streak"
     value={`${streakDays} days`}
     subValue="current"
-    icon={<Flame size={22} className="text-black" />}
+    icon={<Flame size={22} className="text-amber-500" />}
     iconBg="white"
     accentColor={accentColor}
   />
@@ -318,7 +312,7 @@ const Dashboard: React.FC = () => {
       {/* MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         {/* Active Projects */}
-        <div className="lg:col-span-4 bg-white rounded-[26px] border border-black/15 shadow-sm p-6">
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-[16px] font-semibold text-slate-900">
               Active projects
@@ -375,15 +369,15 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Effort Trend */}
-        <div className="lg:col-span-5 bg-white rounded-[26px] border border-black/15 shadow-sm p-6">
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
           <div className="flex items-center justify-between">
             <h2 className="text-[16px] font-semibold text-slate-900">
               Effort trend
             </h2>
-            <p className="text-xs font-semibold text-slate-400">last 7 days</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">last 7 days</p>
           </div>
 
-          <div className="mt-6 h-[190px]">
+          <div className="mt-4 flex-1 min-h-0" style={{ minHeight: 180 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={effortTrendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -406,7 +400,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Daily Focus */}
-        <div className="lg:col-span-3 bg-white rounded-[26px] border border-black/15 shadow-sm p-6 flex flex-col">
+        <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
           <div className="flex items-center justify-between">
             <h2 className="text-[16px] font-semibold text-slate-900">Daily focus</h2>
             <span className="text-[11px] font-semibold text-slate-400">
@@ -476,7 +470,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Time by Category */}
-        <div className="lg:col-span-4 bg-white rounded-[26px] border border-black/15 shadow-sm p-6">
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <h2 className="text-[16px] font-semibold text-slate-900">
             Time by category
           </h2>
@@ -517,7 +511,7 @@ const Dashboard: React.FC = () => {
   {categoryBreakdown.slice(0, 4).map((c, idx) => (
     <div
       key={c.name}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl border border-black/10 bg-white shadow-sm"
+      className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white"
     >
       <div
         className="w-3 h-3 rounded-full"
@@ -531,7 +525,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Recent Work */}
-        <div className="lg:col-span-8 bg-white rounded-[26px] border border-black/15 shadow-sm p-6">
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-[16px] font-semibold text-slate-900">
               Recent work

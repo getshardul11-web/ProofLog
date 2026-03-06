@@ -215,7 +215,7 @@ const Reports: React.FC = () => {
           <div className="relative" ref={templateMenuRef}>
             <button
               onClick={() => setShowTemplateMenu(v => !v)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap text-sm text-slate-700"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all border border-slate-200 bg-white whitespace-nowrap text-sm text-slate-700"
             >
               <FileText size={15} className="text-slate-500" />
               <span>{currentTemplate.label}</span>
@@ -223,7 +223,7 @@ const Reports: React.FC = () => {
             </button>
 
             {showTemplateMenu && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl border border-black/10 shadow-xl overflow-hidden z-50">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden z-50">
                 <div className="px-4 py-3 border-b border-slate-100">
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Output Format</p>
                 </div>
@@ -256,7 +256,7 @@ const Reports: React.FC = () => {
           <button
             onClick={handleGenerateAI}
             disabled={isGenerating || logs.length === 0}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-slate-200 bg-white whitespace-nowrap"
           >
             {isGenerating ? (
               <>
@@ -275,7 +275,7 @@ const Reports: React.FC = () => {
           <button
             onClick={handleCopy}
             disabled={!reportText}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-slate-200 bg-white whitespace-nowrap"
           >
             {copied ? (
               <>
@@ -294,7 +294,7 @@ const Reports: React.FC = () => {
           <button
             onClick={handleDraftEmail}
             disabled={!reportText}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-slate-200 bg-white whitespace-nowrap"
           >
             <Mail size={16} className="text-slate-500" />
             <span className="text-sm">Email</span>
@@ -304,7 +304,7 @@ const Reports: React.FC = () => {
           <button
             onClick={handleNotionExport}
             disabled={!reportText}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-black/15 bg-white/70 backdrop-blur-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-slate-200 bg-white whitespace-nowrap"
           >
             <NotepadText size={16} className="text-slate-500" />
             <span className="text-sm">{notionCopied ? 'Copied!' : 'Notion'}</span>
@@ -315,10 +315,10 @@ const Reports: React.FC = () => {
       {/* MAIN GRID */}
       <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch" style={{ minHeight: '60vh' }}>
         {/* LEFT — Raw breakdown */}
-        <div className="bg-white rounded-[26px] border border-black/10 shadow-sm flex flex-col overflow-hidden" style={{ minHeight: '400px' }}>
-          <div className="p-6 border-b border-black/10 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden" style={{ minHeight: '400px' }}>
+          <div className="p-6 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-white/70 border border-black/15 shadow-sm flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
                 <FileText size={18} className="text-slate-600" />
               </div>
               <div>
@@ -341,7 +341,7 @@ const Reports: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {wins.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-black/8 shadow-sm">
+                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
                     <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
@@ -358,7 +358,7 @@ const Reports: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {ongoing.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-black/8 shadow-sm">
+                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
                     <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
@@ -375,7 +375,7 @@ const Reports: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {blockers.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-black/8 shadow-sm">
+                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <p className="font-semibold text-slate-900 text-sm tracking-tight">{log.title}</p>
                     <p className="text-slate-600 text-sm mt-1 leading-relaxed">{log.impact}</p>
                   </div>
@@ -388,9 +388,9 @@ const Reports: React.FC = () => {
 
         {/* RIGHT — Smart summary */}
         <div className="bg-white rounded-[26px] border border-black/10 shadow-sm flex flex-col relative overflow-hidden" style={{ minHeight: '400px' }}>
-          <div className="p-6 border-b border-black/10 flex items-center justify-between">
+          <div className="p-6 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-start gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-white/70 border border-black/15 shadow-sm flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
                 <Sparkles size={18} style={{ color: accentColor }} />
               </div>
               <div>
@@ -433,7 +433,7 @@ const Reports: React.FC = () => {
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center px-6 gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/70 border border-black/10 shadow-sm flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
                   <Sparkles size={20} style={{ color: accentColor }} />
                 </div>
                 <div>
@@ -454,7 +454,7 @@ const Reports: React.FC = () => {
           </div>
 
           {reportText && (
-            <div className="px-6 py-4 border-t border-black/10 text-xs text-slate-500 flex justify-between items-center">
+            <div className="px-6 py-4 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
               <span className="font-semibold">Generated with Gemini · {currentTemplate.label}</span>
               <span className="font-medium">{new Date().toLocaleTimeString()}</span>
             </div>

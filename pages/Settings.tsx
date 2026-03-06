@@ -166,10 +166,10 @@ const Settings: React.FC = () => {
 
       <div className="space-y-6">
         {/* Profile */}
-        <div className="bg-white/70 backdrop-blur-2xl p-6 rounded-3xl border border-slate-200/70 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
             <div
-              className="w-10 h-10 rounded-2xl border border-slate-200/70 shadow-sm flex items-center justify-center text-lg"
+              className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-lg"
               style={{ background: `radial-gradient(circle at 30% 30%, ${accentColor} 0%, rgba(255,255,255,0.9) 70%)` }}
             >
               {user.name?.charAt(0)?.toUpperCase() || '?'}
@@ -185,7 +185,7 @@ const Settings: React.FC = () => {
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Full name</label>
               <input
                 type="text"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200/70 bg-white/70 outline-none text-sm font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none text-sm font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
                 value={user.name}
                 onChange={(e) => handleUpdate({ name: e.target.value })}
               />
@@ -194,7 +194,7 @@ const Settings: React.FC = () => {
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email</label>
               <input
                 type="email"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200/70 bg-white/70 outline-none text-sm font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none text-sm font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
                 value={user.email}
                 onChange={(e) => handleUpdate({ email: e.target.value })}
               />
@@ -203,10 +203,10 @@ const Settings: React.FC = () => {
         </div>
 
         {/* Reminders */}
-        <div className="bg-white/70 backdrop-blur-2xl p-6 rounded-3xl border border-slate-200/70 shadow-sm space-y-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-white/70 border border-slate-200/70 shadow-sm flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
                 <Bell size={17} className="text-slate-600" />
               </div>
               <div>
@@ -299,7 +299,7 @@ const Settings: React.FC = () => {
             <div>
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Remind me</label>
               <select
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200/70 bg-white/70 outline-none text-sm font-semibold text-slate-700 cursor-pointer focus:ring-2 focus:ring-amber-400 transition-all"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none text-sm font-semibold text-slate-700 cursor-pointer focus:ring-2 focus:ring-amber-400 transition-all"
                 value={reminder.intervalMinutes}
                 onChange={e => saveReminder({ ...reminder, intervalMinutes: parseInt(e.target.value) })}
               >
@@ -315,7 +315,7 @@ const Settings: React.FC = () => {
                 <input
                   type="number"
                   min="0" max="23"
-                  className="w-full px-3 py-3 rounded-2xl border border-slate-200/70 bg-white/70 outline-none text-sm font-semibold text-slate-700 text-center focus:ring-2 focus:ring-amber-400 transition-all"
+                  className="w-full px-3 py-3 rounded-2xl border border-slate-200 bg-white outline-none text-sm font-semibold text-slate-700 text-center focus:ring-2 focus:ring-amber-400 transition-all"
                   value={reminder.startHour}
                   onChange={e => saveReminder({ ...reminder, startHour: parseInt(e.target.value) || 0 })}
                 />
@@ -323,7 +323,7 @@ const Settings: React.FC = () => {
                 <input
                   type="number"
                   min="0" max="23"
-                  className="w-full px-3 py-3 rounded-2xl border border-slate-200/70 bg-white/70 outline-none text-sm font-semibold text-slate-700 text-center focus:ring-2 focus:ring-amber-400 transition-all"
+                  className="w-full px-3 py-3 rounded-2xl border border-slate-200 bg-white outline-none text-sm font-semibold text-slate-700 text-center focus:ring-2 focus:ring-amber-400 transition-all"
                   value={reminder.endHour}
                   onChange={e => saveReminder({ ...reminder, endHour: parseInt(e.target.value) || 18 })}
                 />

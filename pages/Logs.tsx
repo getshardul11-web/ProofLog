@@ -171,7 +171,7 @@ const Logs: React.FC = () => {
           <input
             type="text"
             placeholder="Search logs, impact, keywords…"
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-black/10 bg-white focus:ring-2 focus:ring-amber-300 focus:border-transparent transition-all outline-none text-sm font-medium text-slate-800 placeholder:text-slate-400"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-2 focus:ring-amber-300 focus:border-transparent transition-all outline-none text-sm font-medium text-slate-800 placeholder:text-slate-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -181,7 +181,7 @@ const Logs: React.FC = () => {
         <div className="relative">
           <Filter className="absolute left-3.5 top-3.5 text-slate-400" size={16} />
           <select
-            className="pl-9 pr-8 py-3 rounded-2xl border border-black/10 bg-white outline-none appearance-none text-sm font-semibold text-slate-700 cursor-pointer"
+            className="pl-9 pr-8 py-3 rounded-2xl border border-slate-200 bg-white outline-none appearance-none text-sm font-semibold text-slate-700 cursor-pointer"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
           >
@@ -193,7 +193,7 @@ const Logs: React.FC = () => {
         </div>
 
         {/* View Toggle */}
-        <div className="flex items-center bg-white border border-black/10 rounded-2xl p-1 gap-1 shrink-0">
+        <div className="flex items-center bg-white border border-slate-200 rounded-2xl p-1 gap-1 shrink-0">
           <button
             onClick={() => setViewMode('timeline')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
@@ -217,7 +217,7 @@ const Logs: React.FC = () => {
 
       {/* ── TIMELINE VIEW ───────────────────────────────── */}
       {viewMode === 'timeline' && (
-        <div className="relative space-y-10 before:absolute before:inset-0 before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-[2px] before:bg-gradient-to-b before:from-transparent before:via-black/70 before:to-transparent">
+        <div className="relative space-y-10 before:absolute before:inset-0 before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-[2px] before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
           {filteredLogs.map((log, idx) => (
             <div
               key={log.id}
@@ -225,7 +225,7 @@ const Logs: React.FC = () => {
             >
               {/* Timeline Dot */}
               <div className="flex items-center justify-center w-12 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                <div className="w-12 h-12 rounded-full border border-black bg-white shadow-sm flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center">
                   <div
                     className="w-4 h-4 rounded-full shadow-inner"
                     style={{
@@ -236,7 +236,7 @@ const Logs: React.FC = () => {
               </div>
 
               {/* Content Card */}
-              <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-white/70 backdrop-blur-2xl p-5 sm:p-8 rounded-[24px] sm:rounded-[34px] border border-black/30 shadow-sm hover:shadow-md transition-all">
+              <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
                 {/* Top Row */}
                 <div className="flex items-start justify-between gap-3 mb-5">
                   <span
@@ -274,12 +274,12 @@ const Logs: React.FC = () => {
 
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                   <div className={`px-4 py-2 rounded-full text-sm font-semibold ${STATUS_COLORS[log.status]}`}>{log.status}</div>
-                  <div className="flex items-center gap-2 text-slate-600 text-sm font-semibold px-4 py-2 rounded-full bg-white/70 border border-black/30">
+                  <div className="flex items-center gap-2 text-slate-600 text-sm font-semibold px-4 py-2 rounded-full bg-slate-50 border border-slate-200">
                     <Clock size={16} />
                     {log.timeSpent}m
                   </div>
                   {log.tags.map((tag) => (
-                    <div key={tag} className="flex items-center gap-2 text-slate-600 text-sm font-semibold bg-white/70 px-4 py-2 rounded-full border border-black/30">
+                    <div key={tag} className="flex items-center gap-2 text-slate-600 text-sm font-semibold bg-slate-50 px-4 py-2 rounded-full border border-slate-200">
                       <TagIcon size={14} className="text-slate-400" />
                       {tag}
                     </div>
@@ -287,10 +287,10 @@ const Logs: React.FC = () => {
                 </div>
 
                 {log.links.length > 0 && (
-                  <div className="mt-6 pt-5 border-t border-black/20 flex flex-wrap gap-3">
+                  <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap gap-3">
                     {log.links.map((link, lIdx) => (
                       <a key={lIdx} href={link} target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-2xl bg-white/70 border border-black/30 shadow-sm hover:shadow-md transition-all"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all"
                       >
                         <ExternalLink size={16} className="text-slate-400" />
                         Proof link {lIdx + 1}
@@ -301,12 +301,12 @@ const Logs: React.FC = () => {
 
                 <div className="mt-6 flex justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all">
                   <button onClick={() => moveLog(idx, 'up')} disabled={idx === 0}
-                    className="px-4 py-2.5 rounded-2xl border border-black/30 bg-white/70 text-slate-600 hover:text-slate-900 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <ChevronUp size={18} />
                   </button>
                   <button onClick={() => moveLog(idx, 'down')} disabled={idx === logs.length - 1}
-                    className="px-4 py-2.5 rounded-2xl border border-black/30 bg-white/70 text-slate-600 hover:text-slate-900 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <ChevronDown size={18} />
                   </button>
@@ -316,8 +316,8 @@ const Logs: React.FC = () => {
           ))}
 
           {filteredLogs.length === 0 && (
-            <div className="text-center py-20 bg-white rounded-[26px] border border-black/10 shadow-sm">
-              <div className="mx-auto w-16 h-16 bg-slate-50 border border-black/10 rounded-full flex items-center justify-center text-slate-300 mb-4">
+            <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <div className="mx-auto w-16 h-16 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center text-slate-300 mb-4">
                 <Search size={28} />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 tracking-tight">No logs found</h3>
@@ -331,7 +331,7 @@ const Logs: React.FC = () => {
 
       {/* ── CALENDAR VIEW ───────────────────────────────── */}
       {viewMode === 'calendar' && (
-        <div className="bg-white rounded-[26px] border border-black/10 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Calendar Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <h2 className="text-[16px] font-semibold text-slate-900">
@@ -340,19 +340,19 @@ const Logs: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCalendarDate(new Date(calYear, calMonth - 1, 1))}
-                className="w-8 h-8 flex items-center justify-center rounded-xl border border-black/10 hover:bg-slate-50 transition-colors text-slate-600"
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-slate-600"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={() => setCalendarDate(new Date())}
-                className="px-3 py-1.5 text-xs font-semibold text-slate-600 border border-black/10 rounded-xl hover:bg-slate-50 transition-colors"
+                className="px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
               >
                 Today
               </button>
               <button
                 onClick={() => setCalendarDate(new Date(calYear, calMonth + 1, 1))}
-                className="w-8 h-8 flex items-center justify-center rounded-xl border border-black/10 hover:bg-slate-50 transition-colors text-slate-600"
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-slate-600"
               >
                 <ChevronRight size={16} />
               </button>
