@@ -67,26 +67,10 @@ const Reports: React.FC = () => {
   const isHeading = (line: string) => {
     const t = line.trim().toLowerCase();
     return (
-      t === 'overview' ||
-      t === 'key accomplishments' ||
-      t === 'ongoing work' ||
-      t === 'risks & blockers' ||
-      t === 'risks and blockers' ||
-      t === 'next steps' ||
-      t === 'blockers' ||
-      t === 'wins' ||
-      t === 'in progress' ||
-      t === 'what i completed' ||
-      t === 'what i\'m working on next' ||
-      t === 'any blockers' ||
-      t === 'impact highlights' ||
-      t === 'progress overview' ||
-      t === 'attention items' ||
-      t === 'what went well' ||
-      t === 'what could be improved' ||
-      t === 'key learnings and action items' ||
-      t === 'status overview' ||
-      t === 'key risks'
+      t === 'core tasks' ||
+      t === 'highlights' ||
+      t === 'top category' ||
+      t === 'learnings'
     );
   };
 
@@ -147,28 +131,40 @@ const Reports: React.FC = () => {
           logs: safeLogs,
           template: selectedTemplate,
           instructions: `
-Return the weekly report strictly in this structure:
+Return the report EXACTLY in this structure.
 
 CORE TASKS
-- Identify the project or category with the most total time.
-- Summarize the main work done in that project using the logs.
-
-HIGHLIGHTS
-- Group key accomplishments into logical sub-categories.
+- Identify the project with the most total time spent.
+- Explain the main work done in that project using the logs.
+- Combine related logs into a clean summary.
 - Use bullet points.
 
+HIGHLIGHTS
+Group achievements into logical sub-categories such as:
+• Product
+• Design
+• Engineering
+• Infrastructure
+
+Use bullet points under each sub-category.
+
 TOP CATEGORY
-- Identify the category with the most work logged and explain why it dominated the week.
+- Identify which category consumed the most time.
+- Explain why it dominated the week.
 
 LEARNINGS
-- Derive the top 3 meta-learnings from the work.
-- Focus on skills, patterns, or knowledge gained.
+Derive the top 3 meta learnings from the work. Focus on deeper themes such as:
+• product thinking
+• engineering patterns
+• design insights
+• workflow improvements
 
 Formatting rules:
-- Use clear section dividers.
-- Use bold section titles.
-- Use clean bullet points.
-- No emojis.
+- Section titles MUST be uppercase.
+- Leave one blank line after each title.
+- Use bullet points only (•).
+- Do NOT write summary paragraphs.
+- Do NOT include emojis.
 `
         }),
       });
