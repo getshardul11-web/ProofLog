@@ -70,10 +70,8 @@ const Settings: React.FC = () => {
         } catch {}
       }
 
-      // Check notification permission
-      if ('Notification' in window) {
-        setNotifPermission(Notification.permission);
-      }
+      // Desktop app (Tauri) — treat notifications as enabled
+      setNotifPermission('granted');
     };
 
     init();
@@ -255,11 +253,6 @@ const Settings: React.FC = () => {
             )}
           </div>
 
-          {notifPermission === 'denied' && (
-            <div className="px-4 py-3 rounded-2xl bg-rose-50 border border-rose-100 text-xs text-rose-600 font-medium">
-              Notifications are blocked by your browser. Open browser settings → Site settings → Notifications to allow Pollen.
-            </div>
-          )}
 
           {/* Enable toggle */}
           {notifPermission === 'granted' && (

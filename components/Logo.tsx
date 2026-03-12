@@ -14,43 +14,32 @@ const Logo: React.FC<LogoProps> = ({ size = 28, className = "" }) => {
       fill="none"
       className={className}
     >
-      {/* glow background */}
-      <circle cx="32" cy="32" r="26" fill="#F4C430" opacity="0.08" />
+      {/* pollen nucleus */}
+      <circle cx="32" cy="32" r="7" fill="#E6B800" />
 
-      {/* central pollen core */}
-      <circle cx="32" cy="32" r="9" fill="#F4C430" />
-
-      {/* inner particles */}
-      <circle cx="32" cy="16" r="2.5" fill="#F4C430" />
-      <circle cx="48" cy="32" r="2.5" fill="#F4C430" />
-      <circle cx="32" cy="48" r="2.5" fill="#F4C430" />
-      <circle cx="16" cy="32" r="2.5" fill="#F4C430" />
-
-      {/* outer particles */}
-      <circle cx="12" cy="20" r="2" fill="#F4C430" opacity="0.9" />
-      <circle cx="52" cy="14" r="2" fill="#F4C430" opacity="0.8" />
-      <circle cx="50" cy="50" r="2" fill="#F4C430" opacity="0.7" />
-      <circle cx="14" cy="46" r="2" fill="#F4C430" opacity="0.8" />
-
-      {/* orbit ring */}
-      <circle
-        cx="32"
-        cy="32"
-        r="18"
-        stroke="#F4C430"
-        strokeWidth="1.5"
-        strokeDasharray="3 4"
-        opacity="0.5"
-      />
-
-      {/* signal arc (represents activity / logs / momentum) */}
+      {/* flowing pollen motion arc */}
       <path
-        d="M20 10 A24 24 0 0 1 54 28"
-        stroke="#F4C430"
-        strokeWidth="2"
+        d="M14 36c3-12 16-20 28-16"
+        stroke="#E6B800"
+        strokeWidth="3"
         strokeLinecap="round"
-        opacity="0.8"
+        opacity="0.9"
       />
+
+      {/* secondary motion arc */}
+      <path
+        d="M20 46c8 6 20 6 28-2"
+        stroke="#E6B800"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.65"
+      />
+
+      {/* seed particle */}
+      <circle cx="46" cy="18" r="3" fill="#E6B800" opacity="0.9" />
+
+      {/* subtle secondary particle */}
+      <circle cx="18" cy="28" r="2.3" fill="#E6B800" opacity="0.7" />
     </svg>
   );
 };
