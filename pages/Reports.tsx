@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../services/storage';
 import { WorkLog, Status, ACCENT_COLORS } from '../types';
-import { generateSmartReport, REPORT_TEMPLATES, ReportTemplateKey } from '../services/gemini';
+import { REPORT_TEMPLATES, ReportTemplateKey } from '../services/gemini';
 import {
   Sparkles,
   Copy,
@@ -130,6 +130,7 @@ const Reports: React.FC = () => {
 
   const handleGenerateAI = async () => {
     if (logs.length === 0) return;
+
     setIsGenerating(true);
     setReportText('');
 
@@ -143,20 +144,28 @@ const Reports: React.FC = () => {
         createdAt: l.createdAt,
       }));
 
-      const result = await runWithTimeout(
-        generateSmartReport(safeLogs as any, selectedTemplate),
-        30000
-      );
+      const res = await fetch('http://localhost:4000/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          logs: safeLogs,
+          template: selectedTemplate,
+        }),
+      });
 
-      if (!result || typeof result !== 'string') {
-        throw new Error('Gemini returned empty response');
+      const data = await res.json();
+
+      if (!data?.report) {
+        throw new Error('Local LLM returned empty response');
       }
 
-      setReportText(result);
+      setReportText(data.report);
     } catch (err: any) {
-      console.error('Report generation failed:', err);
+      console.error('Local report generation failed:', err);
       setReportText(
-        `Can't generate report right now.\n\nReason: ${err?.message || 'Unknown error'}\n\nTry again in a moment.`
+        `Can't generate report right now.\n\nReason: ${err?.message || 'Unknown error'}`
       );
     } finally {
       setIsGenerating(false);
