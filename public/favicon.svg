@@ -1,15 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Background for PWA icon -->
-  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="110" fill="#ffffff"/>
 
-  <!-- Core pollen -->
-  <circle cx="256" cy="256" r="110" fill="#D4AF37"/>
+  <!-- Main pollen core -->
+  <circle cx="256" cy="256" r="120" fill="#C9A227"/>
 
-  <!-- Orbit particles -->
-  <circle cx="390" cy="210" r="32" fill="#D4AF37"/>
-  <circle cx="150" cy="360" r="28" fill="#D4AF37"/>
-  <circle cx="350" cy="360" r="26" fill="#D4AF37"/>
-
-  <!-- subtle orbit ring -->
-  <circle cx="256" cy="256" r="170" fill="none" stroke="#D4AF37" stroke-width="14" opacity="0.25"/>
+  <!-- Small orbit particles -->
+  <circle cx="380" cy="210" r="26" fill="#C9A227"/>
+  <circle cx="170" cy="360" r="24" fill="#C9A227"/>
 </svg>
