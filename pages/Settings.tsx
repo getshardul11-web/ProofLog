@@ -99,10 +99,21 @@ const Settings: React.FC = () => {
   };
 
   const saveReminder = (newConfig: ReminderConfig) => {
-    setReminder(newConfig);
+    // Always preserve lastFired from localStorage — App.tsx updates it when a
+    // notification fires, but our React state may be stale. Overwriting it would
+    // reset the hourly timer every time the user touches a setting.
+    let toSave = { ...newConfig };
     if (userId) {
-      localStorage.setItem(`pollen-reminder-${userId}`, JSON.stringify(newConfig));
+      const existing = localStorage.getItem(`pollen-reminder-${userId}`);
+      if (existing) {
+        try {
+          const parsed = JSON.parse(existing);
+          toSave.lastFired = Math.max(newConfig.lastFired ?? 0, parsed.lastFired ?? 0);
+        } catch {}
+      }
+      localStorage.setItem(`pollen-reminder-${userId}`, JSON.stringify(toSave));
     }
+    setReminder(toSave);
     setReminderSaved(true);
     setTimeout(() => setReminderSaved(false), 2000);
   };

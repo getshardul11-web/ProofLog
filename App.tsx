@@ -118,14 +118,10 @@ const App: React.FC = () => {
         const config = JSON.parse(raw);
         if (!config.enabled) return;
 
-        const now = new Date();
-        const currentDay  = now.getDay();   // 0=Sun … 6=Sat
-        const currentHour = now.getHours();
-
+        const currentDay = new Date().getDay(); // 0=Sun … 6=Sat
         if (!Array.isArray(config.days) || !config.days.includes(currentDay)) return;
-        if (currentHour < config.startHour || currentHour >= config.endHour) return;
 
-        const intervalMs = (config.intervalMinutes || 120) * 60 * 1000;
+        const intervalMs = (config.intervalMinutes || 60) * 60 * 1000;
         const lastFired  = config.lastFired || 0;
 
         if (Date.now() - lastFired < intervalMs) return;
@@ -143,9 +139,9 @@ const App: React.FC = () => {
       }
     };
 
-    // Check immediately, then every minute
+    // Check immediately, then every 30 seconds
     checkReminder();
-    const ticker = setInterval(checkReminder, 60_000);
+    const ticker = setInterval(checkReminder, 30_000);
     return () => clearInterval(ticker);
   }, [session]);
 
