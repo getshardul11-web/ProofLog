@@ -78,6 +78,7 @@ const Reports: React.FC = () => {
     return text
       .replace(/```[\s\S]*?```/g, '')
       .replace(/\r\n/g, '\n')
+      .replace(/here'?s the analysis:?/gi, '')
       .trim();
   };
 
@@ -131,40 +132,62 @@ const Reports: React.FC = () => {
           logs: safeLogs,
           template: selectedTemplate,
           instructions: `
-Return the report EXACTLY in this structure.
+instructions: \`
+Write the weekly report as if I am sending it to my mentors.
+Do NOT refer to me in third person. Never say "the person", "the developer", or "the logs show".
+Write directly in first-person work language such as "Worked on", "Improved", "Resolved", etc.
+
+The report MUST start with the week line in this format:
+
+WEEK OF <DATE RANGE>
+
+Example:
+WEEK OF 9–15 MAR
+
+Then follow EXACTLY this structure.
 
 CORE TASKS
-- Identify the project with the most total time spent.
-- Explain the main work done in that project using the logs.
-- Combine related logs into a clean summary.
-- Use bullet points.
+
+• Identify the project with the most total time spent.
+• Summarize the main work done in that project using the logs.
+• Combine related logs into a clear narrative of what was worked on.
 
 HIGHLIGHTS
-Group achievements into logical sub-categories such as:
-• Product
-• Design
-• Engineering
-• Infrastructure
 
-Use bullet points under each sub-category.
+Group important outcomes into sub-categories such as:
+
+Product
+Design
+Engineering
+Infrastructure
+
+Under each category include bullet points describing the work done.
 
 TOP CATEGORY
-- Identify which category consumed the most time.
-- Explain why it dominated the week.
+
+• Identify the category with the most time spent.
+• Briefly explain why this category dominated the week.
 
 LEARNINGS
-Derive the top 3 meta learnings from the work. Focus on deeper themes such as:
+
+Derive the top 3 meta learnings from the work. These should be deeper patterns such as:
+
 • product thinking
 • engineering patterns
 • design insights
 • workflow improvements
 
 Formatting rules:
-- Section titles MUST be uppercase.
-- Leave one blank line after each title.
-- Use bullet points only (•).
-- Do NOT write summary paragraphs.
-- Do NOT include emojis.
+
+• NEVER include phrases like "Here is the analysis", "Summary", "Insights", or "Suggestions".
+• Do NOT write introductions.
+• Do NOT mention logs.
+• Do NOT mention analysis.
+• Section titles MUST be uppercase.
+• Leave one blank line after each section title.
+• Use bullet points only (•).
+• No emojis.
+\`
 `
         }),
       });
