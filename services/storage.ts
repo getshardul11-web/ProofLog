@@ -12,16 +12,16 @@ export const db = {
 
     if (!user) return null;
 
-    // fetch profile row
+    // fetch profile row (maybeSingle avoids error when no row exists yet)
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
+    // If profile fetch fails (missing row or RLS), fall back to auth user data
     if (error) {
-      console.error('getUser profile error', error);
-      return null;
+      console.warn('getUser profile error (using auth fallback):', error.message);
     }
 
     return {
@@ -73,11 +73,28 @@ export const db = {
       return [];
     }
 
-    return data || [];
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      userId: row.user_id || row.userId || '',
+      name: row.name,
+      description: row.description,
+      color: row.color,
+      createdAt: row.created_at ? new Date(row.created_at).getTime() : (row.createdAt || Date.now()),
+    }));
   },
 
   async saveProject(project: Project) {
-    const { error } = await supabase.from('projects').upsert(project);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from('projects').upsert({
+      id: project.id,
+      user_id: user.id,
+      name: project.name,
+      description: project.description,
+      color: project.color,
+      created_at: project.createdAt ? new Date(project.createdAt).toISOString() : new Date().toISOString(),
+    });
 
     if (error) console.error('saveProject error', error);
   },
