@@ -93,12 +93,6 @@ const Reports: React.FC = () => {
   const stripMarkdown = (text: string) => {
     return text
       .replace(/```[\s\S]*?```/g, '')
-      .replace(/\*\*/g, '')
-      .replace(/###\s*/g, '')
-      .replace(/##\s*/g, '')
-      .replace(/#\s*/g, '')
-      .replace(/\*/g, '')
-      .replace(/_/g, '')
       .replace(/\r\n/g, '\n')
       .trim();
   };
@@ -152,6 +146,30 @@ const Reports: React.FC = () => {
         body: JSON.stringify({
           logs: safeLogs,
           template: selectedTemplate,
+          instructions: `
+Return the weekly report strictly in this structure:
+
+CORE TASKS
+- Identify the project or category with the most total time.
+- Summarize the main work done in that project using the logs.
+
+HIGHLIGHTS
+- Group key accomplishments into logical sub-categories.
+- Use bullet points.
+
+TOP CATEGORY
+- Identify the category with the most work logged and explain why it dominated the week.
+
+LEARNINGS
+- Derive the top 3 meta-learnings from the work.
+- Focus on skills, patterns, or knowledge gained.
+
+Formatting rules:
+- Use clear section dividers.
+- Use bold section titles.
+- Use clean bullet points.
+- No emojis.
+`
         }),
       });
 
@@ -404,7 +422,7 @@ const Reports: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-semibold tracking-tight text-[15px] text-slate-900">Smart summary</h3>
-                <p className="text-sm text-slate-500">{currentTemplate.label} · Gemini</p>
+                <p className="text-sm text-slate-500">{currentTemplate.label} · Ollama3</p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">
@@ -464,7 +482,7 @@ const Reports: React.FC = () => {
 
           {reportText && (
             <div className="px-6 py-4 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
-              <span className="font-semibold">Generated with Gemini · {currentTemplate.label}</span>
+              <span className="font-semibold">Generated with Ollama3 · {currentTemplate.label}</span>
               <span className="font-medium">{new Date().toLocaleTimeString()}</span>
             </div>
           )}
