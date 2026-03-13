@@ -1,6 +1,17 @@
 import { WorkLog, Project, UserProfile } from '../types';
 import { supabase } from './supabase';
 
+// Supabase may return timestamps without a timezone suffix when the column type
+// is `timestamp` rather than `timestamptz`. Without a suffix, new Date() treats
+// the string as *local* time — so "10:30" UTC appears as "10:30" IST instead of
+// the correct "16:00" IST. This helper forces UTC parsing.
+function toUtcMs(raw: string | null | undefined): number {
+  if (!raw) return Date.now();
+  let s = raw.replace(' ', 'T');            // "2026-03-13 10:30:00" → ISO format
+  if (!s.endsWith('Z') && !s.includes('+')) s += 'Z'; // append UTC if missing
+  return new Date(s).getTime();
+}
+
 export const db = {
   // =========================
   // USER
@@ -79,7 +90,7 @@ export const db = {
       name: row.name,
       description: row.description,
       color: row.color,
-      createdAt: row.created_at ? new Date(row.created_at).getTime() : (row.createdAt || Date.now()),
+      createdAt: toUtcMs(row.created_at) || row.createdAt || Date.now(),
     }));
   },
 
@@ -148,9 +159,7 @@ export const db = {
       links: row.links || [],
       projectId: row.project_id ?? row.projectId ?? '',
       proofUrl: row.proof_url ?? row.proofUrl,
-      createdAt: row.created_at
-        ? new Date(row.created_at).getTime()
-        : (row.createdAt || Date.now()),
+      createdAt: toUtcMs(row.created_at) || row.createdAt || Date.now(),
     }));
   },
 

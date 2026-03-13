@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../services/storage';
-import { WorkLog, Category, ACCENT_COLORS } from '../types';
+import { WorkLog, Category, Status, ACCENT_COLORS } from '../types';
 import { STATUS_COLORS, CATEGORY_COLORS } from '../constants';
 import {
   Search,
@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutList,
+  X,
 } from 'lucide-react';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -24,8 +25,10 @@ const Logs: React.FC = () => {
   const [logs, setLogs] = useState<WorkLog[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('All');
+  const [filterStatus, setFilterStatus] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'timeline' | 'calendar'>('timeline');
   const [calendarDate, setCalendarDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const [editingLog, setEditingLog] = useState<WorkLog | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -111,9 +114,10 @@ const Logs: React.FC = () => {
         log.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.impact.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = filterCategory === 'All' || log.category === filterCategory;
-      return matchesSearch && matchesCategory;
+      const matchesStatus = filterStatus === 'All' || log.status === filterStatus;
+      return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [logs, searchTerm, filterCategory]);
+  }, [logs, searchTerm, filterCategory, filterStatus]);
 
   const moveLog = (index: number, direction: 'up' | 'down') => {
     const newLogs = [...logs];
@@ -140,6 +144,12 @@ const Logs: React.FC = () => {
     });
     return map;
   }, [filteredLogs]);
+
+  const selectedDayLogs = useMemo(() => {
+    if (!selectedDate) return [];
+    const key = `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}`;
+    return (logsByDate[key] || []).slice().sort((a, b) => a.createdAt - b.createdAt);
+  }, [selectedDate, logsByDate]);
 
   const calYear = calendarDate.getFullYear();
   const calMonth = calendarDate.getMonth();
@@ -188,6 +198,21 @@ const Logs: React.FC = () => {
             <option value="All">All categories</option>
             {Object.values(Category).map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Status filter */}
+        <div className="relative">
+          <Filter className="absolute left-3.5 top-3.5 text-slate-400" size={16} />
+          <select
+            className="pl-9 pr-8 py-3 rounded-2xl border border-slate-200 bg-white outline-none appearance-none text-sm font-semibold text-slate-700 cursor-pointer"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="All">All statuses</option>
+            {Object.values(Status).map((s) => (
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
         </div>
@@ -378,8 +403,16 @@ const Logs: React.FC = () => {
                 const dayKey = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
                 const dayLogs = logsByDate[dayKey] || [];
                 const today = isToday(day);
+                const isSelected = selectedDate &&
+                  selectedDate.getFullYear() === day.getFullYear() &&
+                  selectedDate.getMonth() === day.getMonth() &&
+                  selectedDate.getDate() === day.getDate();
                 return (
-                  <div key={dIdx} className="min-h-[110px] p-2 border-r border-slate-100 last:border-r-0 hover:bg-amber-50/30 transition-colors">
+                  <div
+                    key={dIdx}
+                    onClick={() => setSelectedDate(isSelected ? null : day)}
+                    className={`min-h-[110px] p-2 border-r border-slate-100 last:border-r-0 transition-colors cursor-pointer ${isSelected ? 'bg-amber-50' : 'hover:bg-amber-50/30'}`}
+                  >
                     <div className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold mb-1.5 transition-colors ${
                       today ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'
                     }`}>
@@ -413,6 +446,46 @@ const Logs: React.FC = () => {
           {filteredLogs.length === 0 && (
             <div className="py-16 text-center text-slate-400 text-sm">
               No logs in this period.
+            </div>
+          )}
+
+          {/* Day detail panel */}
+          {selectedDate && (
+            <div className="border-t border-slate-100 px-6 py-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-[15px] font-semibold text-slate-900">
+                    {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {selectedDayLogs.length === 0 ? 'No logs' : `${selectedDayLogs.length} log${selectedDayLogs.length !== 1 ? 's' : ''}`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {selectedDayLogs.length === 0 ? (
+                <p className="text-sm text-slate-400 py-4 text-center">No logs on this day.</p>
+              ) : (
+                <div className="space-y-2">
+                  {selectedDayLogs.map((log) => (
+                    <div key={log.id} className="flex items-start gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                      <span className="text-xs font-semibold text-slate-400 mt-0.5 shrink-0 tabular-nums w-14">
+                        {new Date(log.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{log.title}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{log.category} · {log.status} · {log.timeSpent}m</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
