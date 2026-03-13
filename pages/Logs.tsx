@@ -448,46 +448,6 @@ const Logs: React.FC = () => {
               No logs in this period.
             </div>
           )}
-
-          {/* Day detail panel */}
-          {selectedDate && (
-            <div className="border-t border-slate-100 px-6 py-5">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-[15px] font-semibold text-slate-900">
-                    {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {selectedDayLogs.length === 0 ? 'No logs' : `${selectedDayLogs.length} log${selectedDayLogs.length !== 1 ? 's' : ''}`}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSelectedDate(null)}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {selectedDayLogs.length === 0 ? (
-                <p className="text-sm text-slate-400 py-4 text-center">No logs on this day.</p>
-              ) : (
-                <div className="space-y-2">
-                  {selectedDayLogs.map((log) => (
-                    <div key={log.id} className="flex items-start gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                      <span className="text-xs font-semibold text-slate-400 mt-0.5 shrink-0 tabular-nums w-14">
-                        {new Date(log.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-slate-900 truncate">{log.title}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{log.category} · {log.status} · {log.timeSpent}m</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
 
@@ -533,6 +493,59 @@ const Logs: React.FC = () => {
                   Save changes
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Day Detail Modal ──────────────────────────────── */}
+      {selectedDate && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+          onClick={() => setSelectedDate(null)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col"
+            style={{ animation: 'logFormIn 0.18s cubic-bezier(0.16,1,0.3,1)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
+              <div>
+                <h3 className="text-[15px] font-semibold text-slate-900">
+                  {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {selectedDayLogs.length === 0
+                    ? 'No logs on this day'
+                    : `${selectedDayLogs.length} log${selectedDayLogs.length !== 1 ? 's' : ''} · sorted by time`}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Log list */}
+            <div className="overflow-y-auto px-6 py-4 flex-1 space-y-2">
+              {selectedDayLogs.length === 0 ? (
+                <p className="text-sm text-slate-400 py-8 text-center">No logs on this day.</p>
+              ) : (
+                selectedDayLogs.map((log) => (
+                  <div key={log.id} className="flex items-start gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                    <span className="text-xs font-semibold text-slate-400 mt-0.5 shrink-0 tabular-nums w-16">
+                      {new Date(log.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900">{log.title}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{log.category} · {log.status} · {log.timeSpent}m</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
