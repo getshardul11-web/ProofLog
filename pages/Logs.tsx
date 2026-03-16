@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../services/storage';
+import { supabase } from '../services/supabase';
 import { WorkLog, Category, Status, ACCENT_COLORS } from '../types';
 import { STATUS_COLORS, CATEGORY_COLORS } from '../constants';
+import { getAllCategories } from '../services/categories';
 import {
   Search,
   Filter,
@@ -35,6 +37,7 @@ const Logs: React.FC = () => {
   const [editImpact, setEditImpact] = useState('');
 
   const [accentColor, setAccentColor] = useState('#F4C430');
+  const [allCategories, setAllCategories] = useState<string[]>(Object.values(Category));
 
   useEffect(() => {
     let mounted = true;
@@ -43,6 +46,10 @@ const Logs: React.FC = () => {
       if (!mounted) return;
       if (user) {
         setAccentColor(ACCENT_COLORS[user.accentColor as keyof typeof ACCENT_COLORS] || '#F4C430');
+      }
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (mounted && authUser) {
+        setAllCategories(getAllCategories(authUser.id));
       }
       await loadLogs();
     };
@@ -196,7 +203,7 @@ const Logs: React.FC = () => {
             onChange={(e) => setFilterCategory(e.target.value)}
           >
             <option value="All">All categories</option>
-            {Object.values(Category).map((cat) => (
+            {allCategories.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>

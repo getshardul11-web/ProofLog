@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../services/storage';
 import { supabase } from '../services/supabase';
 import { ACCENT_COLORS, UserProfile } from '../types';
-import { Bell, CheckCircle2, BellOff, Check } from 'lucide-react';
+import { getCustomCategories, addCustomCategory, removeCustomCategory, BUILT_IN_CATEGORIES } from '../services/categories';
+import { Bell, CheckCircle2, BellOff, Check, Plus, X as XIcon } from 'lucide-react';
 
 const DAYS = [
   { label: 'M', full: 'Monday',    value: 1 },
@@ -49,6 +50,9 @@ const Settings: React.FC = () => {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default');
   const [reminderSaved, setReminderSaved] = useState(false);
 
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState('');
+
   useEffect(() => {
     let mounted = true;
 
@@ -60,6 +64,9 @@ const Settings: React.FC = () => {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!mounted || !authUser) return;
       setUserId(authUser.id);
+
+      // Load custom categories
+      if (mounted) setCustomCategories(getCustomCategories(authUser.id));
 
       // Load reminder config
       const raw = localStorage.getItem(`pollen-reminder-${authUser.id}`);
@@ -114,6 +121,19 @@ const Settings: React.FC = () => {
     setReminder(toSave);
     setReminderSaved(true);
     setTimeout(() => setReminderSaved(false), 2000);
+  };
+
+  const handleAddCategory = () => {
+    if (!userId || !newCategory.trim()) return;
+    const updated = addCustomCategory(userId, newCategory);
+    setCustomCategories(updated);
+    setNewCategory('');
+  };
+
+  const handleRemoveCategory = (name: string) => {
+    if (!userId) return;
+    const updated = removeCustomCategory(userId, name);
+    setCustomCategories(updated);
   };
 
   const toggleDay = (day: number) => {
@@ -341,6 +361,64 @@ const Settings: React.FC = () => {
               Reminder settings saved
             </div>
           )}
+        </div>
+        {/* Custom Categories */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <div>
+            <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">Custom Categories</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Add your own categories alongside the built-in ones</p>
+          </div>
+
+          {/* Built-in (read-only chips) */}
+          <div>
+            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Built-in</label>
+            <div className="flex flex-wrap gap-2">
+              {BUILT_IN_CATEGORIES.map(cat => (
+                <span key={cat} className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                  {cat}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom chips */}
+          {customCategories.length > 0 && (
+            <div>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Your Categories</label>
+              <div className="flex flex-wrap gap-2">
+                {customCategories.map(cat => (
+                  <span key={cat} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
+                    style={{ background: accentColor + '18', color: accentColor, borderColor: accentColor + '40' }}>
+                    {cat}
+                    <button onClick={() => handleRemoveCategory(cat)} className="hover:opacity-70 transition-opacity">
+                      <XIcon size={11} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Add new */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="e.g. Writing, Marketing…"
+              className="flex-1 px-4 py-2.5 rounded-2xl border border-slate-200 bg-white outline-none text-sm font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
+              value={newCategory}
+              onChange={e => setNewCategory(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCategory(); } }}
+            />
+            <button
+              onClick={handleAddCategory}
+              disabled={!newCategory.trim()}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: accentColor }}
+            >
+              <Plus size={15} />
+              Add
+            </button>
+          </div>
         </div>
       </div>
     </div>

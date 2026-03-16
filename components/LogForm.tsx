@@ -1,6 +1,7 @@
 import { supabase } from '../services/supabase';
 import React, { useState, useEffect } from 'react';
 import { Category, Status } from '../types';
+import { getAllCategories } from '../services/categories';
 import { X, Tag, Link as LinkIcon, Plus, Loader2 } from 'lucide-react';
 
 interface Project {
@@ -44,6 +45,7 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [boards, setBoards] = useState<Board[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [allCategories, setAllCategories] = useState<string[]>(Object.values(Category));
 
   // Self-load projects and boards on mount
   useEffect(() => {
@@ -77,6 +79,7 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
 
         setBoards(boardsToUse);
         setProjects(projectsData || []);
+        setAllCategories(getAllCategories(user.id));
       } catch (err) {
         console.error('Error loading projects for LogForm:', err);
       } finally {
@@ -203,7 +206,7 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
                 value={category}
                 onChange={(e) => setCategory(e.target.value as Category)}
               >
-                {Object.values(Category).map(cat => (
+                {allCategories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
