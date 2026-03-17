@@ -120,7 +120,8 @@ const Logs: React.FC = () => {
       const matchesSearch =
         log.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.impact.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = filterCategory === 'All' || log.category === filterCategory;
+      const logCats = log.category.split(',').map(c => c.trim());
+      const matchesCategory = filterCategory === 'All' || logCats.includes(filterCategory);
       const matchesStatus = filterStatus === 'All' || log.status === filterStatus;
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -271,13 +272,18 @@ const Logs: React.FC = () => {
               <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
                 {/* Top Row */}
                 <div className="flex items-start justify-between gap-3 mb-5">
-                  <span
-                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-semibold tracking-tight flex-shrink-0 ${
-                      CATEGORY_COLORS[log.category] || 'bg-slate-50 text-slate-700 border border-black/30'
-                    }`}
-                  >
-                    {log.category}
-                  </span>
+                  <div className="flex flex-wrap gap-1.5 flex-shrink-0">
+                    {log.category.split(',').map(cat => cat.trim()).filter(Boolean).map(cat => (
+                      <span
+                        key={cat}
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-semibold tracking-tight ${
+                          (CATEGORY_COLORS as Record<string, string>)[cat] || 'bg-slate-50 text-slate-700 border border-black/30'
+                        }`}
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
 
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="text-xs sm:text-sm font-semibold text-slate-400 flex items-center gap-2 sm:gap-4">
@@ -548,7 +554,7 @@ const Logs: React.FC = () => {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-slate-900">{log.title}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{log.category} · {log.status} · {log.timeSpent}m</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{log.category.split(',').map(c=>c.trim()).join(' · ')} · {log.status} · {log.timeSpent}m</p>
                     </div>
                   </div>
                 ))

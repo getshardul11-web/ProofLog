@@ -418,11 +418,13 @@ const Projects: React.FC = () => {
             <div className="p-4 space-y-4 flex-1 overflow-y-auto">
               {(projectsByBoard[board.name] || []).map((project) => {
                 const projectLogs = logs.filter(
-                  (l: any) => l.project_id === project.id
+                  (l: any) =>
+                    l.project_id === project.id ||
+                    (l.tags || []).some((t: string) => t === `_pid:${project.id}`)
                 );
 
                 const totalTime = projectLogs.reduce(
-                  (acc, l) => acc + (l.timeSpent || 0),
+                  (acc, l) => acc + (l.time_spent || l.timeSpent || 0),
                   0
                 );
 

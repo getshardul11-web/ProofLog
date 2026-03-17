@@ -60,6 +60,18 @@ Structure:
 2. What could be improved (honest reflection)
 3. Key learnings and action items (concrete next steps)`,
   },
+  contentIdeas: {
+    label: 'Content Ideas',
+    description: 'Top 5 themes & topics to write about',
+    prompt: `Analyze these work logs and identify the top 5 themes, insights, or learnings that would make compelling content to write or post about.
+
+For each topic:
+- Give it a punchy, specific title
+- Explain in 1–2 sentences why it's worth writing about and who would find it valuable
+- Suggest the best format (thread, essay, LinkedIn post, case study, etc.)
+
+Focus on: patterns noticed, hard-won learnings, counterintuitive insights, decisions made, problems solved, and behind-the-scenes processes.`,
+  },
 } as const;
 
 export type ReportTemplateKey = keyof typeof REPORT_TEMPLATES;

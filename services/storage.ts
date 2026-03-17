@@ -147,20 +147,52 @@ export const db = {
       return [];
     }
 
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      userId: row.user_id ?? row.userId ?? '',
-      title: row.title,
-      impact: row.impact,
-      category: row.category,
-      status: row.status,
-      timeSpent: row.time_spent ?? row.timeSpent ?? 0,
-      tags: row.tags || [],
-      links: row.links || [],
-      projectId: row.project_id ?? row.projectId ?? '',
-      proofUrl: row.proof_url ?? row.proofUrl,
-      createdAt: toUtcMs(row.created_at) || row.createdAt || Date.now(),
-    }));
+    return (data || []).map((row: any) => {
+      const rawTags: string[] = row.tags || [];
+      // Extract extra project IDs stored as _pid:UUID entries
+      const extraProjectIds = rawTags
+        .filter((t: string) => t.startsWith('_pid:'))
+        .map((t: string) => t.slice(5));
+      const primaryPid = row.project_id ?? row.projectId ?? '';
+      const projectIds = primaryPid
+        ? [primaryPid, ...extraProjectIds]
+        : extraProjectIds;
+      // Extract metadata stored as _meta:{json} entry
+      let nextSteps: string | undefined;
+      let decisions: string | undefined;
+      let challenges: string | undefined;
+      const metaTag = rawTags.find((t: string) => t.startsWith('_meta:'));
+      if (metaTag) {
+        try {
+          const meta = JSON.parse(metaTag.slice(6));
+          nextSteps = meta.nextSteps || undefined;
+          decisions = meta.decisions || undefined;
+          challenges = meta.challenges || undefined;
+        } catch {}
+      }
+      // Only show user-visible tags
+      const visibleTags = rawTags.filter(
+        (t: string) => !t.startsWith('_pid:') && !t.startsWith('_meta:')
+      );
+      return {
+        id: row.id,
+        userId: row.user_id ?? row.userId ?? '',
+        title: row.title,
+        impact: row.impact,
+        category: row.category,
+        status: row.status,
+        timeSpent: row.time_spent ?? row.timeSpent ?? 0,
+        tags: visibleTags,
+        links: row.links || [],
+        projectId: primaryPid,
+        projectIds,
+        proofUrl: row.proof_url ?? row.proofUrl,
+        createdAt: toUtcMs(row.created_at) || row.createdAt || Date.now(),
+        nextSteps,
+        decisions,
+        challenges,
+      };
+    });
   },
 
   async saveLog(log: WorkLog) {

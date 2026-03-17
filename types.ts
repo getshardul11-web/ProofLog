@@ -20,14 +20,19 @@ export interface WorkLog {
   userId: string;
   title: string;
   impact: string;
-  category: Category;
+  category: string;       // comma-joined, e.g. "Design,Vibe Coding"
   status: Status;
-  timeSpent: number; // minutes
+  timeSpent: number;      // minutes
   tags: string[];
   proofUrl?: string;
   links: string[];
-  projectId: string;
+  projectId: string;      // primary project ID
+  projectIds: string[];   // all selected project IDs
   createdAt: number;
+  // Additional context fields
+  nextSteps?: string;
+  decisions?: string;
+  challenges?: string;
 }
 
 export interface Project {

@@ -70,7 +70,8 @@ const Reports: React.FC = () => {
       t === 'core tasks' ||
       t === 'highlights' ||
       t === 'top category' ||
-      t === 'learnings'
+      t === 'learnings' ||
+      /^topic \d+:/.test(t)
     );
   };
 
@@ -123,15 +124,29 @@ const Reports: React.FC = () => {
         createdAt: l.createdAt,
       }));
 
-      const res = await fetch('http://localhost:4000/report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          logs: safeLogs,
-          template: selectedTemplate,
-          instructions: `
+      const isContentIdeas = selectedTemplate === 'contentIdeas';
+      const instructions = isContentIdeas
+        ? `
+instructions: \`
+Analyze the work logs and output EXACTLY 5 content topics.
+
+Format each topic as follows:
+
+TOPIC <N>: <Punchy Title>
+
+• Why write it: <1–2 sentences on who cares and why>
+• Best format: <e.g. LinkedIn post, Twitter thread, essay, case study>
+
+Repeat this block for all 5 topics.
+
+Formatting rules:
+• TOPIC titles must be UPPERCASE and numbered.
+• Use bullet points (•) only inside each block.
+• Do NOT write intros, conclusions, or analysis preambles.
+• No emojis.
+\`
+`
+        : `
 instructions: \`
 Write the weekly report as if I am sending it to my mentors.
 Do NOT refer to me in third person. Never say "the person", "the developer", or "the logs show".
@@ -188,7 +203,17 @@ Formatting rules:
 • Use bullet points only (•).
 • No emojis.
 \`
-`
+`;
+
+      const res = await fetch('http://localhost:4000/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          logs: safeLogs,
+          template: selectedTemplate,
+          instructions,
         }),
       });
 
