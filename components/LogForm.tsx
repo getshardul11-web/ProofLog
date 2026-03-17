@@ -40,9 +40,7 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const [tags, setTags] = useState<string>('');
   const [links, setLinks] = useState<string>('');
-  const [nextSteps, setNextSteps] = useState('');
-  const [decisions, setDecisions] = useState('');
-  const [challenges, setChallenges] = useState('');
+  const [approach, setApproach] = useState('');
   const [saving, setSaving] = useState(false);
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -121,11 +119,9 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
       const extraProjectIds = selectedProjectIds.slice(1);
       const pidTags = extraProjectIds.map(id => `_pid:${id}`);
 
-      // Pack extra context fields into _meta tag
+      // Pack extra context into _meta tag
       const metaObj: Record<string, string> = {};
-      if (nextSteps.trim()) metaObj.nextSteps = nextSteps.trim();
-      if (decisions.trim()) metaObj.decisions = decisions.trim();
-      if (challenges.trim()) metaObj.challenges = challenges.trim();
+      if (approach.trim()) metaObj.approach = approach.trim();
       const metaTags = Object.keys(metaObj).length > 0
         ? [`_meta:${JSON.stringify(metaObj)}`]
         : [];
@@ -228,37 +224,15 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
             />
           </div>
 
-          {/* Next Steps */}
+          {/* Approach */}
           <div>
-            <label className={labelCls}>What's next?</label>
+            <label className={labelCls}>How did you do it?</label>
             <textarea
-              placeholder="What are you planning to do next on this?"
-              className={`${inputCls} h-16 resize-none`}
-              value={nextSteps}
-              onChange={(e) => setNextSteps(e.target.value)}
+              placeholder='Tools, steps, or method you used — e.g. "Wireframed in Figma, iterated on 3 layouts, picked option B based on scroll depth data"'
+              className={`${inputCls} h-20 resize-none`}
+              value={approach}
+              onChange={(e) => setApproach(e.target.value)}
             />
-          </div>
-
-          {/* Decisions + Challenges */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Key Decisions</label>
-              <textarea
-                placeholder="Decisions made during this work…"
-                className={`${inputCls} h-16 resize-none`}
-                value={decisions}
-                onChange={(e) => setDecisions(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Challenges</label>
-              <textarea
-                placeholder="What was hard or blocked you?"
-                className={`${inputCls} h-16 resize-none`}
-                value={challenges}
-                onChange={(e) => setChallenges(e.target.value)}
-              />
-            </div>
           </div>
 
           {/* Categories */}

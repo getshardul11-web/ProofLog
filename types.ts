@@ -29,10 +29,7 @@ export interface WorkLog {
   projectId: string;      // primary project ID
   projectIds: string[];   // all selected project IDs
   createdAt: number;
-  // Additional context fields
-  nextSteps?: string;
-  decisions?: string;
-  challenges?: string;
+  approach?: string;
 }
 
 export interface Project {
