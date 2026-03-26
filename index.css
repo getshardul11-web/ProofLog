@@ -1,5 +1,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 html, body {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
 }
+
+/* ─── Dark mode overrides ─────────────────────────────────────────────────── */
+
+html.dark .bg-white          { background-color: #1e1e1e !important; }
+html.dark .bg-slate-50       { background-color: #252525 !important; }
+html.dark .bg-slate-100      { background-color: #2a2a2a !important; }
+html.dark .bg-slate-200      { background-color: #333 !important; }
+html.dark .bg-slate-900      { background-color: #e2e8f0 !important; }
+html.dark .bg-emerald-50     { background-color: #052e16 !important; }
+
+html.dark .border-slate-100  { border-color: #2a2a2a !important; }
+html.dark .border-slate-200  { border-color: #333 !important; }
+html.dark .border-slate-300  { border-color: #3f3f3f !important; }
+
+html.dark .text-slate-900    { color: #f1f5f9 !important; }
+html.dark .text-slate-800    { color: #e2e8f0 !important; }
+html.dark .text-slate-700    { color: #cbd5e1 !important; }
+html.dark .text-slate-600    { color: #94a3b8 !important; }
+html.dark .text-slate-500    { color: #64748b !important; }
+html.dark .text-slate-400    { color: #4a5568 !important; }
+
+/* bg-slate-900 used for active nav + primary buttons → invert to light */
+html.dark .text-white        { color: #111 !important; }
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #252525 !important;
+  border-color: #333 !important;
+  color: #e2e8f0 !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #4a5568 !important; }
+
+html.dark .shadow-sm  { box-shadow: 0 1px 3px rgba(0,0,0,0.6) !important; }
+html.dark .shadow-2xl { box-shadow: 0 25px 50px rgba(0,0,0,0.8) !important; }
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(148,163,184,0.3); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.4); }

@@ -65,24 +65,24 @@ const Analytics: React.FC = () => {
   const totalHours = Math.floor(totalTime / 60);
   const totalMins = totalTime % 60;
 
-  // Softer Pollen-style palette
   const COLORS = [
-    '#f59e0b',
-    '#0ea5e9',
-    '#10b981',
-    '#8b5cf6',
-    '#f97316',
-    '#ef4444',
-    '#64748b',
+    '#f59e0b', '#0ea5e9', '#10b981', '#8b5cf6',
+    '#f97316', '#ef4444', '#64748b', '#ec4899',
+    '#14b8a6', '#a855f7', '#06b6d4', '#84cc16',
   ];
 
-  // Category distribution (by time)
+  // Category distribution (by time) — split multi-category logs into each category
   const categoryData = useMemo(() => {
     const counts: Record<string, number> = {};
-    Object.values(Category).forEach((cat) => (counts[cat] = 0));
 
     logs.forEach((log) => {
-      counts[log.category] = (counts[log.category] || 0) + log.timeSpent;
+      const cats = (log.category || '')
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean);
+      cats.forEach((cat) => {
+        counts[cat] = (counts[cat] || 0) + log.timeSpent;
+      });
     });
 
     return Object.entries(counts)

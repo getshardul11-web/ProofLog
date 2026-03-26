@@ -36,11 +36,12 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
   const [impact, setImpact] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([Category.DESIGN]);
   const [status, setStatus] = useState<Status>(Status.DONE);
-  const [timeSpent, setTimeSpent] = useState<number>(30);
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const [tags, setTags] = useState<string>('');
   const [links, setLinks] = useState<string>('');
   const [approach, setApproach] = useState('');
+  const [timeHours, setTimeHours] = useState<number>(0);
+  const [timeMinutes, setTimeMinutes] = useState<number>(30);
   const [saving, setSaving] = useState(false);
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -134,7 +135,7 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
         impact,
         category: selectedCategories.join(','),
         status,
-        time_spent: timeSpent,
+        time_spent: timeHours * 60 + timeMinutes,
         project_id: primaryProjectId,
         tags: allTags,
         links: links.split('\n').map(l => l.trim()).filter(Boolean),
@@ -279,14 +280,33 @@ const LogForm: React.FC<LogFormProps> = ({ onClose, onSaved }) => {
               </select>
             </div>
             <div>
-              <label className={labelCls}>Time Spent (min)</label>
-              <input
-                type="number"
-                min="1"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none text-sm font-medium text-slate-700"
-                value={timeSpent}
-                onChange={(e) => setTimeSpent(parseInt(e.target.value) || 0)}
-              />
+              <label className={labelCls}>Time Spent</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    className="w-full px-3 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none text-sm font-medium text-slate-700 text-center"
+                    value={timeHours === 0 ? '' : timeHours}
+                    onChange={(e) => setTimeHours(parseInt(e.target.value) || 0)}
+                  />
+                  <p className="text-[10px] text-slate-400 text-center mt-1">hrs</p>
+                </div>
+                <span className="text-slate-400 font-bold pb-4">:</span>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="30"
+                    className="w-full px-3 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none text-sm font-medium text-slate-700 text-center"
+                    value={timeMinutes === 0 ? '' : timeMinutes}
+                    onChange={(e) => setTimeMinutes(Math.min(59, parseInt(e.target.value) || 0))}
+                  />
+                  <p className="text-[10px] text-slate-400 text-center mt-1">min</p>
+                </div>
+              </div>
             </div>
           </div>
 

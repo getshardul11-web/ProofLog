@@ -3,7 +3,7 @@ import { db } from '../services/storage';
 import { supabase } from '../services/supabase';
 import { ACCENT_COLORS, UserProfile } from '../types';
 import { getCustomCategories, addCustomCategory, removeCustomCategory, BUILT_IN_CATEGORIES } from '../services/categories';
-import { Bell, CheckCircle2, BellOff, Check, Plus, X as XIcon } from 'lucide-react';
+import { Bell, CheckCircle2, BellOff, Check, Plus, X as XIcon, Moon, Sun } from 'lucide-react';
 
 const DAYS = [
   { label: 'M', full: 'Monday',    value: 1 },
@@ -52,6 +52,9 @@ const Settings: React.FC = () => {
 
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState('');
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem('prooflog-dark-mode') === 'true'
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -134,6 +137,18 @@ const Settings: React.FC = () => {
     if (!userId) return;
     const updated = removeCustomCategory(userId, name);
     setCustomCategories(updated);
+  };
+
+  const toggleDarkMode = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    if (next) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('prooflog-dark-mode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('prooflog-dark-mode', 'false');
+    }
   };
 
   const toggleDay = (day: number) => {
@@ -227,6 +242,29 @@ const Settings: React.FC = () => {
                 onChange={(e) => handleUpdate({ email: e.target.value })}
               />
             </div>
+          </div>
+        </div>
+
+        {/* Appearance */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                {darkMode ? <Moon size={17} className="text-slate-600" /> : <Sun size={17} className="text-slate-600" />}
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">Dark Mode</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Switch between light and dark</p>
+              </div>
+            </div>
+            <button
+              onClick={toggleDarkMode}
+              className={`relative w-12 h-6 rounded-full transition-all duration-200 ${darkMode ? 'bg-slate-900' : 'bg-slate-200'}`}
+            >
+              <span
+                className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200 ${darkMode ? 'left-7' : 'left-1'}`}
+              />
+            </button>
           </div>
         </div>
 

@@ -104,12 +104,12 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
   });
 
   return (
-    <div className="min-h-screen w-full bg-[#f8f9fa] relative overflow-hidden">
+    <div className="min-h-screen w-full bg-[#f7f7f5] dark:bg-[#191919] relative overflow-hidden">
       <div className="relative z-10 w-full min-h-screen flex items-stretch p-0">
-        <div className="w-full flex bg-[#f8f9fa] md:border md:border-slate-200">
+        <div className="w-full flex bg-[#f7f7f5] dark:bg-[#191919] md:border md:border-slate-200 dark:md:border-[#2a2a2a]">
 
           {/* SIDEBAR — desktop only */}
-          <aside className="hidden md:flex w-[90px] flex-col items-center py-8 border-r border-slate-200 bg-white">
+          <aside className="hidden md:flex w-[90px] flex-col items-center py-8 border-r border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#1e1e1e]">
             <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center">
               <Logo size={20} />
             </div>
@@ -132,9 +132,9 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
                       e.preventDefault();
                       navigate(item.path);
                     }}
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${isActive
-                        ? "bg-slate-900 text-white shadow-sm"
-                        : "bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-900 border border-slate-200"
+                    className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-150 ${isActive
+                        ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                        : "text-slate-400 hover:bg-slate-100 dark:hover:bg-[#2a2a2a] hover:text-slate-700 dark:hover:text-slate-200"
                       }`}
                   >
                     <Icon size={25} />
@@ -149,8 +149,8 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
           {/* MAIN */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* TOP BAR */}
-            <div className="flex items-center justify-between px-4 md:px-10 py-3 md:py-6 border-b border-slate-200 bg-white">
-              <h1 className="text-[17px] md:text-[20px] font-bold tracking-tight text-slate-900 truncate">
+            <div className="flex items-center justify-between px-4 md:px-10 py-3 md:py-5 border-b border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#1e1e1e]">
+              <h1 className="text-[16px] md:text-[18px] font-semibold tracking-tight text-slate-900 dark:text-slate-100 truncate">
                 {NAV_ITEMS.find((n) => n.path === location.pathname)?.label ||
                   "Dashboard"}
               </h1>
@@ -159,28 +159,24 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
                 {/* New Log */}
                 <button
                   onClick={onOpenLogModal}
-                  className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50"
+                  className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-700 dark:hover:bg-white transition-colors"
                 >
-                  <Plus size={18} style={{ color: accentColor }} />
-                  <span className="hidden sm:inline text-sm font-semibold text-slate-800">
+                  <Plus size={16} className="text-white dark:text-slate-900" />
+                  <span className="hidden sm:inline text-sm font-semibold text-white dark:text-slate-900">
                     New log
                   </span>
                 </button>
 
-                {/* Date — desktop only */}
-                <div className="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-600 bg-white px-4 py-2.5 rounded-full border border-slate-200 shadow-sm">
-                  <Calendar size={16} className="text-slate-400" />
+                {/* Date + Time — desktop only */}
+                <div className="hidden lg:flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                  <Clock size={14} className="text-slate-400" />
+                  {currentTime}
+                  <span className="text-slate-300 dark:text-slate-600">·</span>
                   {currentDate}
                 </div>
 
-                {/* Time — desktop only */}
-                <div className="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-600 bg-white px-4 py-2.5 rounded-full border border-slate-200 shadow-sm">
-                  <Clock size={16} className="text-slate-400" />
-                  {currentTime}
-                </div>
-
                 {/* Profile + Logout */}
-                <div className="flex items-center gap-2 md:gap-3 bg-white border border-slate-200 shadow-sm rounded-full px-2 md:px-4 py-2 md:py-2.5">
+                <div className="flex items-center gap-2 md:gap-3 bg-white dark:bg-[#252525] border border-slate-200 dark:border-[#333] rounded-lg px-2 md:px-3 py-1.5 md:py-2">
                   <img
                     src={
                       user?.user_metadata?.avatar_url ||
@@ -214,7 +210,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
             </div>
 
             {/* PAGE CONTENT */}
-            <main className="flex-1 px-4 md:px-10 py-5 md:py-8 overflow-y-auto bg-[#f8f9fa] pb-24 md:pb-8">
+            <main className="flex-1 px-4 md:px-10 py-5 md:py-8 overflow-y-auto bg-[#f7f7f5] dark:bg-[#191919] pb-24 md:pb-8">
               {children}
             </main>
           </div>
@@ -223,7 +219,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onOpenLogModal }) => {
 
       {/* BOTTOM NAV — mobile only */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around items-center px-1 pt-2 pb-3"
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1e1e1e] border-t border-slate-200 dark:border-[#2a2a2a] z-50 flex justify-around items-center px-1 pt-2 pb-3"
         style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
       >
         {NAV_ITEMS.map((item) => {
